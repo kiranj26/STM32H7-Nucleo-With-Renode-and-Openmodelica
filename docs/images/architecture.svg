@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="t d">
+  <title id="t">Co-simulation architecture</title>
+  <desc id="d">Robot Framework orchestrates an OpenModelica plant FMU, a Python labkit bridge, and STM32H743 firmware running either in Renode or on the Nucleo board, exchanging actuation and sensor frames.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#94a3b8"/>
+    </marker>
+    <style>
+      .t  { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; fill: #f1f5f9; }
+      .s  { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; fill: #94a3b8; font-size: 14px; }
+      .m  { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; fill: #cbd5e1; font-size: 13px; }
+      .ln { stroke: #94a3b8; stroke-width: 2; fill: none; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="560" rx="18" fill="#0b1220"/>
+
+  <!-- Robot Framework band -->
+  <rect x="30" y="24" width="1140" height="66" rx="12" fill="#052e1c" stroke="#22c55e" stroke-width="2"/>
+  <text x="54" y="54" class="t" font-size="20" font-weight="700">Robot Framework</text>
+  <text x="54" y="76" class="s">Suite Setup boots everything · requirement-named tests · tags smoke/long/hw · ${TARGET} = mil | sil | renode | hw</text>
+  <text x="1146" y="62" class="m" text-anchor="end">log.html · report.html</text>
+
+  <!-- OpenModelica -->
+  <rect x="30" y="140" width="320" height="250" rx="14" fill="#0b2545" stroke="#3b82f6" stroke-width="2"/>
+  <text x="54" y="174" class="t" font-size="20" font-weight="700">OpenModelica</text>
+  <text x="54" y="198" class="s">physical plant model</text>
+  <rect x="54" y="214" width="272" height="64" rx="8" fill="#0f172a"/>
+  <text x="68" y="240" class="m">Lab.Thermal.Chamber</text>
+  <text x="68" y="262" class="m">Lab.Motor · Lab.Pendulum …</text>
+  <text x="54" y="306" class="s">.mos → simulate · linearize</text>
+  <text x="54" y="330" class="s">buildModelFMU (FMI 2.0 CS, CVODE)</text>
+  <rect x="54" y="344" width="132" height="30" rx="15" fill="#1e3a8a"/>
+  <text x="120" y="364" class="m" text-anchor="middle" fill="#bfdbfe">plant.fmu</text>
+
+  <!-- labkit -->
+  <rect x="440" y="140" width="320" height="250" rx="14" fill="#2e1065" stroke="#a855f7" stroke-width="2"/>
+  <text x="464" y="174" class="t" font-size="20" font-weight="700">labkit (Python)</text>
+  <text x="464" y="198" class="s">bridge · orchestrator</text>
+  <rect x="464" y="214" width="272" height="96" rx="8" fill="#0f172a"/>
+  <text x="478" y="240" class="m">fmu.doStep(Ts)</text>
+  <text x="478" y="262" class="m">link: COBS + CRC16 frames</text>
+  <text x="478" y="284" class="m">metrics · runlog · plots</text>
+  <text x="464" y="336" class="s">P1–P3: firmware-driven stepping</text>
+  <text x="464" y="360" class="s">P4+: lockstep RunFor(Ts) ↔ doStep(Ts)</text>
+
+  <!-- Renode -->
+  <rect x="850" y="140" width="320" height="170" rx="14" fill="#431407" stroke="#f97316" stroke-width="2"/>
+  <text x="874" y="174" class="t" font-size="20" font-weight="700">Renode</text>
+  <text x="874" y="198" class="s">emulated STM32H743 · virtual time</text>
+  <rect x="874" y="214" width="272" height="80" rx="8" fill="#0f172a"/>
+  <text x="888" y="240" class="m">firmware.elf (same binary)</text>
+  <text x="888" y="262" class="m">stm32h743.repl + overlay</text>
+  <text x="888" y="284" class="m">custom peripherals (P3+)</text>
+
+  <!-- Nucleo -->
+  <rect x="850" y="330" width="320" height="104" rx="14" fill="#022c22" stroke="#10b981" stroke-width="2"/>
+  <text x="874" y="364" class="t" font-size="20" font-weight="700">Nucleo-H743ZI2</text>
+  <text x="874" y="388" class="s">real silicon · USB VCP (USART3)</text>
+  <text x="874" y="412" class="m">make hw P=pN  (macOS host)</text>
+
+  <!-- arrows: OM -> labkit -->
+  <path class="ln" d="M350 265 H436" marker-end="url(#a)"/>
+  <text x="393" y="254" class="m" text-anchor="middle">FMU</text>
+
+  <!-- labkit <-> Renode -->
+  <path class="ln" d="M760 210 H846" marker-end="url(#a)"/>
+  <text x="803" y="200" class="m" text-anchor="middle">sensors</text>
+  <path class="ln" d="M846 246 H764" marker-end="url(#a)"/>
+  <text x="803" y="266" class="m" text-anchor="middle">actuation</text>
+  <text x="803" y="290" class="s" text-anchor="middle" font-size="12">TCP socket</text>
+
+  <!-- labkit <-> Nucleo -->
+  <path class="ln" d="M760 360 C 800 360, 810 382, 846 382" marker-end="url(#a)"/>
+  <text x="803" y="408" class="s" text-anchor="middle" font-size="12">serial</text>
+
+  <!-- Robot -> components -->
+  <g stroke="#22c55e" stroke-width="2" stroke-dasharray="5 6" fill="none">
+    <path d="M190 90 V136" marker-end="url(#a)"/>
+    <path d="M600 90 V136" marker-end="url(#a)"/>
+    <path d="M1010 90 V136" marker-end="url(#a)"/>
+  </g>
+
+  <!-- results band -->
+  <rect x="30" y="470" width="1140" height="66" rx="12" fill="#111827" stroke="#334155" stroke-width="2"/>
+  <text x="54" y="500" class="t" font-size="18" font-weight="700">Evidence</text>
+  <text x="54" y="522" class="s">projects/pN/results/YYYY-MM-DD_*/ → report.html · log.html · run.csv · meta.json (git SHA, params, tool versions) · plots</text>
+  <path class="ln" d="M600 390 V466" marker-end="url(#a)"/>
+</svg>

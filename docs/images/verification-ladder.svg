@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="330" viewBox="0 0 1200 330" role="img" aria-labelledby="t d">
+  <title id="t">MIL to SIL to PIL to HW verification ladder</title>
+  <desc id="d">Four rising steps: MIL (model controller and model plant), SIL (real C controller on host), PIL (real firmware in Renode), HW (real firmware on the Nucleo board). One Robot suite runs on every level.</desc>
+  <defs>
+    <style>
+      .t { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; fill: #f8fafc; font-weight: 700; }
+      .s { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; fill: #cbd5e1; font-size: 14px; }
+      .m { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+    </style>
+  </defs>
+  <rect width="1200" height="330" rx="18" fill="#0b1220"/>
+
+  <!-- steps (rising) -->
+  <g>
+    <rect x="30"  y="170" width="270" height="130" rx="12" fill="#0c4a6e"/>
+    <text x="50" y="204" class="t" font-size="24">MIL</text>
+    <text x="50" y="230" class="s">controller: Modelica / Python</text>
+    <text x="50" y="252" class="s">plant: Modelica</text>
+    <text x="50" y="284" class="m" fill="#7dd3fc">TARGET:mil</text>
+
+    <rect x="320" y="130" width="270" height="170" rx="12" fill="#3b0764"/>
+    <text x="340" y="164" class="t" font-size="24">SIL</text>
+    <text x="340" y="190" class="s">controller: fw/common/ctrl (C)</text>
+    <text x="340" y="212" class="s">compiled for the host</text>
+    <text x="340" y="234" class="s">plant: FMU</text>
+    <text x="340" y="284" class="m" fill="#d8b4fe">TARGET:sil</text>
+
+    <rect x="610" y="90" width="270" height="210" rx="12" fill="#7c2d12"/>
+    <text x="630" y="124" class="t" font-size="24">PIL</text>
+    <text x="630" y="150" class="s">full firmware ELF</text>
+    <text x="630" y="172" class="s">emulated Cortex-M7 in Renode</text>
+    <text x="630" y="194" class="s">real registers, ISRs, timers</text>
+    <text x="630" y="216" class="s">plant: FMU (virtual time)</text>
+    <text x="630" y="284" class="m" fill="#fdba74">TARGET:renode</text>
+
+    <rect x="900" y="50" width="270" height="250" rx="12" fill="#064e3b"/>
+    <text x="920" y="84" class="t" font-size="24">HW</text>
+    <text x="920" y="110" class="s">same ELF on Nucleo-H743ZI2</text>
+    <text x="920" y="132" class="s">real clocks, cache, jitter</text>
+    <text x="920" y="154" class="s">plant: FMU over USB VCP</text>
+    <text x="920" y="284" class="m" fill="#6ee7b7">TARGET:hw</text>
+  </g>
+
+  <text x="30" y="44" class="t" font-size="20">One Robot suite · four levels · same thresholds</text>
+  <text x="30" y="70" class="s">Each step up adds realism: discretization → compiled code → processor and peripherals → physical silicon.</text>
+</svg>
