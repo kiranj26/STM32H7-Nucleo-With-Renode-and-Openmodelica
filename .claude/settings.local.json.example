@@ -1,0 +1,14 @@
+{
+  "//": "Copy to .claude/settings.local.json (gitignored) for personal, machine-specific overrides. Remove this key.",
+  "permissions": {
+    "allow": [
+      "Bash(make hw:*)",
+      "Bash(st-flash write:*)",
+      "Bash(git commit:*)"
+    ]
+  },
+  "env": {
+    "NUCLEO_SERIAL_PORT": "/dev/cu.usbmodem14203",
+    "RENODE_BIN": "/Applications/Renode.app/Contents/MacOS/renode"
+  }
+}

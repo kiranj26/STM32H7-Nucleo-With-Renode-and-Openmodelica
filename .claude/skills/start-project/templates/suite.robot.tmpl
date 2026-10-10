@@ -1,0 +1,18 @@
+*** Settings ***
+Documentation     P{{N}} {{Name}}: requirements-style tests. Target selected with --variable TARGET:renode|hw|sil|mil
+Resource          ${RENODEKEYWORDS}
+Resource          ${CURDIR}/../../../tests/common/renode.resource
+Suite Setup       Start Project Target    p{{N}}_{{name}}
+Suite Teardown    Stop Project Target
+Test Teardown     Collect Run Evidence
+Force Tags        p{{N}}
+
+*** Variables ***
+${TARGET}         renode
+${UART}           sysbus.usart3
+${BOOT_TIMEOUT_S}    5
+
+*** Test Cases ***
+Firmware Boots And Reports Hello
+    [Tags]    smoke
+    Wait For Line On Uart    Hello    timeout=${BOOT_TIMEOUT_S}

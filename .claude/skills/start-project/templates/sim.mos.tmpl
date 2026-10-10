@@ -1,0 +1,16 @@
+// P{{N}} {{Name}}: simulate the test bench and export the plant FMU.
+// Run from repo root:  omc projects/p{{N}}_{{name}}/scripts/p{{N}}.mos
+// Every call is followed by getErrorString() so failures are visible in the log.
+
+loadModel(Modelica, {"4.0.0"}); getErrorString();
+loadFile("models/Lab/package.mo"); getErrorString();
+// loadFile("projects/p{{N}}_{{name}}/model/P{{N}}Bench.mo"); getErrorString();
+
+// --- Simulation (state solver + tolerance explicitly) ---
+// simulate(P{{N}}Bench, stopTime=600, tolerance=1e-6, method="dassl",
+//          outputFormat="csv", fileNamePrefix="p{{N}}_bench"); getErrorString();
+
+// --- FMU export (co-simulation, CVODE inside the FMU, not the default Euler) ---
+// setCommandLineOptions("--fmiFlags=s:cvode"); getErrorString();
+// buildModelFMU(Lab.<Plant>, version="2.0", fmuType="cs",
+//               fileNamePrefix="p{{N}}_plant", platforms={"static"}); getErrorString();
