@@ -42,19 +42,19 @@ Get every tool producing output **independently** before connecting anything. Cu
 ## 4. How to run
 ```sh
 make doctor                            # container: tool versions (milestone 1)
-make fw   P=p0
+make fw   P=p0                         # devcontainer only (canonical ELF)
 make sim  P=p0                         # RC graphical vs. equations
 make test P=p0 TAGS=smoke              # Renode
-make hw   P=p0                         # macOS host, board attached
+make hw   P=p0 HW_DESC=<desc>          # macOS host, board attached: flash + 20 s capture + meta.json
 ```
-(The Makefile is built during P0; these targets don't exist yet.)
+Working now: `doctor`, `fw` (container), `hw` (host). `sim` and `test` are stubs until steps G and F.
 
 ## 5. Results
 <!-- Every number links to a dated run folder in results/. Label the level: Renode / HW. -->
 | Metric | Requirement | Renode | HW |
 |---|---|---|---|
-| `Hello` on USART3 after boot | ≤ 5 s virtual | | ✅ boot banner + `Hello <n>` on VCP, LD1 blinking ([run](results/2026-10-10_hw_hello/)) |
-| `Hello` period (HAL_Delay(500) → 501 ticks + TX) | ≈ 501–502 ms | | ⚠️ 495.1 ms mean, n=39, ±3 ms jitter: ~1.3 % fast, cause open ([run](results/2026-10-10_hw_hello/meta.json)) |
+| `Hello` on USART3 after boot | ≤ 5 s virtual | | ✅ boot banner + `Hello <n>` on VCP, LD1 blinking: Mac-built ELF ([run](results/2026-10-10_hw_hello/)) and canonical container ELF `50ac07ca…` ([run](results/2026-10-10_hw_container_elf/)) |
+| `Hello` period (HAL_Delay(500) → 501 ticks + TX) | ≈ 501–502 ms | | ⚠️ 495.1 ms (Mac ELF, [run](results/2026-10-10_hw_hello/meta.json)) and 495.3 ms (container ELF, [run](results/2026-10-10_hw_container_elf/)), n=39 each: ~1.3 % fast, reproducible across both builds, cause open |
 | RC graphical vs. equations max \|Δv\| | ≈ 0 (same equations) | (MIL) | N/A |
 
 ![](results/YYYY-MM-DD_desc/plot.png)
@@ -68,7 +68,7 @@ make hw   P=p0                         # macOS host, board attached
 - **First capture started with `Hello 9`…`Hello 39`, all with the same timestamp, before the boot banner**: bytes sent before the reset were still buffered in the USB VCP path → the script drains the port for 0.7 s before resetting ([capture_uart.pl](scripts/capture_uart.pl)). *Lesson:* identical timestamps on many lines mean "buffered", not "sent together".
 - **`uart.log` didn't show in `git status`**: a global `*.log` rule in `.gitignore` hid my evidence → added `!projects/*/results/**/*.log`. *Lesson:* run `git check-ignore -v <file>` when a file you expect is missing from `git status`.
 - **Mac-built and container-built `.bin` differ (2 161 bytes) despite identical size**: Arm's prebuilt `libc_nano.a` has a different member order on macOS than on Linux (e.g. `nano-svfprintf.o` is member 126 on the Mac vs 248 on Linux), so the linker places `printf`/`malloc` at different addresses. The first differing instruction is `bl _svfiprintf_r` in `snprintf` (→ 0x08005488 on the Mac vs 0x08005674 in the container); the function set and sizes are identical. Pinning the same compiler build (15.3.rel2 = arm-15.180) didn't change it → the container-built ELF is canonical, the Mac only flashes ([dev-environment.md](../../docs/dev-environment.md)). *Lesson:* "same compiler version" doesn't mean "same binary"; compare `.bin` hashes, then `nm` and `objdump` to find *what* differs before deciding whether it matters.
-- **Board `Hello` period is 495.1 ms, not ~501 ms (HW)**: expected 501 ticks (`HAL_Delay` adds one tick) + ~0.9 ms TX. Short means the CPU runs *faster* than HAL assumes, which points at an HSE input of ≈ 8.1 MHz from the ST-LINK MCO instead of exactly 8 MHz. Cause _open_, not yet tested (MCO1 on PA8 with a scope, or HSI A/B test) ([run](results/2026-10-10_hw_hello/meta.json)). *Lesson:* the MCU can't detect its own clock error; only an external reference shows it. I first guessed "lower than 8 MHz", which has the direction backwards.
+- **Board `Hello` period is 495.1 ms, not ~501 ms (HW)**: expected 501 ticks (`HAL_Delay` adds one tick) + ~0.9 ms TX. Short means the CPU runs *faster* than HAL assumes, which points at an HSE input of ≈ 8.1 MHz from the ST-LINK MCO instead of exactly 8 MHz. Reproduced with the container-built ELF (495.3 ms), so it follows the board, not the build. Cause _open_, not yet tested (MCO1 on PA8 with a scope, or HSI A/B test) ([run](results/2026-10-10_hw_hello/meta.json)). *Lesson:* the MCU can't detect its own clock error; only an external reference shows it. I first guessed "lower than 8 MHz", which has the direction backwards.
 
 ## 7. What I'd do differently
 <!-- Written by me, not generated. -->
@@ -80,4 +80,4 @@ make hw   P=p0                         # macOS host, board attached
 - [ ] Annotate a copy of `stm32h743.repl`: memory map, NVIC wiring, real models vs. tags, missing peripherals (sets P3 scope)
 - [ ] Draw `RC_Graphical.mo` in OMEdit; write `RC_Equations.mo` by hand; pick R, C and stopTime from τ
 - [ ] Write the first Robot test that waits for `Hello`
-- [ ] Flash the same ELF to the board and confirm the same output (HW half done 2026-10-10, [run](results/2026-10-10_hw_hello/); "same as Renode" pending)
+- [ ] Flash the same ELF to the board and confirm the same output (HW half done with the canonical ELF via `make hw`, [run](results/2026-10-10_hw_container_elf/); Renode half pending)
