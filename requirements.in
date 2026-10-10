@@ -1,0 +1,31 @@
+# Direct Python dependencies for the devcontainer (Python 3.11).
+# Lock with:  uv pip compile requirements.in --python-version 3.11 -o requirements.txt
+
+# --- Renode 1.17.0 Robot integration (copied from renode v1.17.0
+# tests/requirements.txt + tools/{csv2resd,execution_tracer}/requirements.txt).
+# Renode's keywords are tested against these exact versions.
+# Update this block together with the Renode version in .devcontainer/Dockerfile.
+robotframework==6.1
+robotframework-retryfailed==0.2.0
+psutil==5.9.4
+pyyaml==6.0.*
+telnetlib3==2.0.*
+construct==2.10.68
+pyelftools==0.30
+
+# Co-simulation and model scripting
+fmpy
+OMPython
+
+# Hardware link (TARGET:hw) and analysis/plots
+pyserial
+numpy
+matplotlib
+
+# Quality
+pytest
+ruff
+
+# Build tools pinned via pip so versions match the macOS host
+cmake==4.4.4
+ninja

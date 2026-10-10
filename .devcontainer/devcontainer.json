@@ -1,0 +1,28 @@
+{
+  // VS Code: "Dev Containers: Reopen in Container". Same image as CI (ADR-0002).
+  "name": "h7lab",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "..",
+    "options": ["--platform=linux/amd64"]
+  },
+  "runArgs": ["--platform=linux/amd64"],
+  // Bind mount: /work IS the repo on the Mac, so build/ is visible on both sides
+  "workspaceMount": "source=${localWorkspaceFolder},target=/work,type=bind",
+  "workspaceFolder": "/work",
+  "postCreateCommand": "make doctor",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "robocorp.robotframework-lsp",
+        "charliermarsh.ruff"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/opt/venv/bin/python",
+        "cmake.configureOnOpen": false
+      }
+    }
+  }
+}
