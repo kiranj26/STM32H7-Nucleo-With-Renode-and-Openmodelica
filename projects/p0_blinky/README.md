@@ -24,8 +24,10 @@ Get every tool producing output **independently** before connecting anything. Cu
 
 | Tool | Feature | Where |
 |---|---|---|
-| STM32 | 🎓 CubeMX board selector (NUCLEO-H743ZI2), clock tree, CMake generation | `fw/p0_blinky/p0_blinky.ioc` |
-| STM32 | USER CODE blocks: `app_init()` / `app_loop()` wired from `main.c` | [app.h](../../fw/p0_blinky/app/app.h) |
+| STM32 | 🎓 CubeMX board selector (NUCLEO-H743ZI2), clock tree (HSE bypass → PLL1 → 400 MHz), CMake generation | [p0_blinky.ioc](../../fw/p0_blinky/p0_blinky.ioc), [CUBEMX.md](../../fw/p0_blinky/CUBEMX.md) |
+| STM32 | USER CODE blocks: `app_init()` / `app_loop()` wired from `main.c`, survived a regeneration | [main.c#L25-L27](../../fw/p0_blinky/Core/Src/main.c#L25-L27), [#L95-L97](../../fw/p0_blinky/Core/Src/main.c#L95-L97), [#L104-L105](../../fw/p0_blinky/Core/Src/main.c#L104-L105) |
+| STM32 | Root `CMakeLists.txt` user sections + `cmake --preset Debug` cross-build | [CMakeLists.txt#L46-L55](../../fw/p0_blinky/CMakeLists.txt#L46-L55) |
+| STM32 | Flash with `st-flash`, SWD reset, timestamped VCP capture | [capture_uart.pl](scripts/capture_uart.pl), [run](results/2026-10-10_hw_hello/) |
 | Renode | 🎓 `.resc`: `mach create`, `LoadPlatformDescription`, `sysbus LoadELF` | [p0.resc](renode/p0.resc) |
 | Renode | 🎓 `showAnalyzer` on USART3 | `renode/p0_gui.resc` |
 | Renode | 🎓 Reading and annotating the H743 `.repl` line by line (models vs. tags, missing peripherals) | `renode/stm32h743_annotated.repl` |
@@ -59,17 +61,22 @@ make hw   P=p0                         # macOS host, board attached
 
 ## 6. Problems hit
 <!-- symptom → root cause → fix (link) → lesson. The most valuable section. -->
-- **Board `Hello` period is 495 ms, not ~501 ms (HW)**: cause _open_ ([run](results/2026-10-10_hw_hello/meta.json)). *Lesson:* ...
-- **<symptom>**: cause → fix ([link]). *Lesson:* ...
+- **CubeMX showed no error with DIVN1 = ×129**: 8 MHz × 129 = 1032 MHz VCO is out of range, but the System Clock Mux was still on HSI, so PLL1 wasn't used and its outputs were greyed out instead of red → set DIVN1 = 100 *before* switching the mux to PLLCLK ([CUBEMX.md §3](../../fw/p0_blinky/CUBEMX.md)). *Lesson:* CubeMX only validates clock paths that are actually in use; check the VCO by hand.
+- **`app_loop()` would have been deleted on the next regeneration**: I pasted it between `USER CODE END WHILE` and `USER CODE BEGIN 3`, which is outside every block → moved it inside block 3 ([main.c#L104-L105](../../fw/p0_blinky/Core/Src/main.c#L104-L105)); it then survived a regeneration. *Lesson:* only text strictly between a BEGIN/END pair is mine; the gap between two blocks still belongs to CubeMX.
+- **`screen -L -Logfile …` → "Unknown option Logfile"**: macOS ships `screen` 4.00.03 (2006); `-Logfile` came in 4.06 → captured with `stty` + a Perl reader instead ([capture_uart.pl](scripts/capture_uart.pl)). *Lesson:* check the tool version (`screen -v`) before trusting docs for the current release.
+- **`zsh: resource busy: /dev/tty.usbmodem31403`**: two detached `screen` sessions from earlier still held the port (`lsof /dev/tty.usbmodem*` showed them) → `screen -S <pid> -X quit`. *Lesson:* a serial port has one owner; closing a terminal window detaches `screen`, it doesn't kill it (`Ctrl-A K` kills).
+- **First capture started with `Hello 9`…`Hello 39`, all with the same timestamp, before the boot banner**: bytes sent before the reset were still buffered in the USB VCP path → the script drains the port for 0.7 s before resetting ([capture_uart.pl](scripts/capture_uart.pl)). *Lesson:* identical timestamps on many lines mean "buffered", not "sent together".
+- **`uart.log` didn't show in `git status`**: a global `*.log` rule in `.gitignore` hid my evidence → added `!projects/*/results/**/*.log`. *Lesson:* run `git check-ignore -v <file>` when a file you expect is missing from `git status`.
+- **Board `Hello` period is 495.1 ms, not ~501 ms (HW)**: expected 501 ticks (`HAL_Delay` adds one tick) + ~0.9 ms TX. Short means the CPU runs *faster* than HAL assumes, which points at an HSE input of ≈ 8.1 MHz from the ST-LINK MCO instead of exactly 8 MHz. Cause _open_, not yet tested (MCO1 on PA8 with a scope, or HSI A/B test) ([run](results/2026-10-10_hw_hello/meta.json)). *Lesson:* the MCU can't detect its own clock error; only an external reference shows it. I first guessed "lower than 8 MHz", which has the direction backwards.
 
 ## 7. What I'd do differently
 <!-- Written by me, not generated. -->
 
 ## 8. 🎓 Steps (done by hand)
-- [ ] Create `p0_blinky.ioc` in CubeMX and generate CMake ([CUBEMX.md](../../fw/p0_blinky/CUBEMX.md))
+- [x] Create `p0_blinky.ioc` in CubeMX and generate CMake ([CUBEMX.md](../../fw/p0_blinky/CUBEMX.md)), 2026-10-10
 - [ ] Write the first `.resc` boot and get the ELF loading in Renode
 - [ ] Find the RCC/PWR ready-flag hang with `LogPeripheralAccess` + `cpu PC`, fix it in `p0_overlay.repl`, write it up in §6
 - [ ] Annotate a copy of `stm32h743.repl`: memory map, NVIC wiring, real models vs. tags, missing peripherals (sets P3 scope)
 - [ ] Draw `RC_Graphical.mo` in OMEdit; write `RC_Equations.mo` by hand; pick R, C and stopTime from τ
 - [ ] Write the first Robot test that waits for `Hello`
-- [ ] Flash the same ELF to the board and confirm the same output
+- [ ] Flash the same ELF to the board and confirm the same output (HW half done 2026-10-10, [run](results/2026-10-10_hw_hello/); "same as Renode" pending)

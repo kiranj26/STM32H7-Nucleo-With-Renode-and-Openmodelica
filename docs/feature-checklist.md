@@ -72,7 +72,7 @@ Legend: `[ ]` planned · `[x]` demonstrated (with link)
 ## STM32 / firmware
 | Feature | Planned in | Status / evidence |
 |---|---|---|
-| CubeMX board project to CMake | P0 | [ ] |
+| CubeMX board project to CMake | P0 | [x] [p0_blinky.ioc](../fw/p0_blinky/p0_blinky.ioc), [CUBEMX.md](../fw/p0_blinky/CUBEMX.md) |
 | Timer-ISR control tick | P1 | [ ] |
 | UART DMA/IT ring buffer link | P1 | [ ] |
 | PWM generation, encoder mode, ADC | P3 | [ ] |
