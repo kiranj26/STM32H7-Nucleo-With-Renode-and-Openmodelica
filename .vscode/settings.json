@@ -1,0 +1,29 @@
+{
+  "files.associations": {
+    "*.resc": "plaintext",
+    "*.repl": "yaml",
+    "*.mo": "modelica",
+    "*.mos": "modelica",
+    "*.robot": "robotframework",
+    "*.resource": "robotframework",
+    "*.ioc": "properties"
+  },
+  "files.readonlyInclude": {
+    "fw/*/Drivers/**": true,
+    "fw/*/cmake/stm32cubemx/**": true
+  },
+  "files.exclude": {
+    "**/__pycache__": true
+  },
+  "search.exclude": {
+    "build/**": true,
+    "fw/*/Drivers/**": true
+  },
+  "C_Cpp.default.compilerPath": "arm-none-eabi-gcc",
+  "cmake.configureOnOpen": false,
+  "editor.formatOnSave": true,
+  "[c]": { "editor.defaultFormatter": "ms-vscode.cpptools" },
+  "[python]": { "editor.defaultFormatter": "charliermarsh.ruff" },
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": ["tools/labkit/tests"]
+}
