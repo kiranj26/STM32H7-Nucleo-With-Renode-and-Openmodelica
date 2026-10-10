@@ -1,0 +1,13 @@
+# Applied to hand-written C only (fw/common/**, fw/pN_*/app/**) by the format hook.
+# CubeMX-generated files are never reformatted.
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 110
+BreakBeforeBraces: Linux
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AlignConsecutiveMacros: Consecutive
+AlignConsecutiveDeclarations: None
+PointerAlignment: Right
+IncludeBlocks: Preserve
+SortIncludes: Never

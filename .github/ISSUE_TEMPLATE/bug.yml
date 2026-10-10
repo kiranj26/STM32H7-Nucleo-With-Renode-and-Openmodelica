@@ -1,0 +1,35 @@
+name: Bug / unexpected behavior
+description: Something misbehaves in firmware, model, emulation, tests, or CI
+title: "[bug] <short symptom>"
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: level
+    attributes:
+      label: Where does it happen?
+      multiple: true
+      options: [MIL (model only), SIL (host), Renode, Hardware, CI]
+    validations:
+      required: true
+  - type: textarea
+    id: symptom
+    attributes:
+      label: Symptom
+      description: What you see. Paste log lines (Renode monitor, UART, omc, Robot).
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduce
+      description: Exact make or robot commands, and the commit SHA.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+  - type: textarea
+    id: tried
+    attributes:
+      label: Already tried / suspicions

@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(make fw:*)",
+      "Bash(make unit:*)",
+      "Bash(make sim:*)",
+      "Bash(make fmu:*)",
+      "Bash(make test:*)",
+      "Bash(make lint:*)",
+      "Bash(make clean:*)",
+      "Bash(make help)",
+      "Bash(cmake:*)",
+      "Bash(ninja:*)",
+      "Bash(arm-none-eabi-size:*)",
+      "Bash(arm-none-eabi-objdump:*)",
+      "Bash(arm-none-eabi-nm:*)",
+      "Bash(arm-none-eabi-readelf:*)",
+      "Bash(arm-none-eabi-addr2line:*)",
+      "Bash(omc:*)",
+      "Bash(robot:*)",
+      "Bash(rebot:*)",
+      "Bash(renode-test:*)",
+      "Bash(pytest:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(python3 -m pytest:*)",
+      "Bash(python3 -m unittest:*)",
+      "Bash(ruff:*)",
+      "Bash(clang-format:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git tag --list:*)",
+      "Bash(git ls-files:*)",
+      "Bash(ls:*)",
+      "Bash(tree:*)"
+    ],
+    "ask": [
+      "Bash(make hw:*)",
+      "Bash(st-flash:*)",
+      "Bash(st-info:*)",
+      "Bash(STM32_Programmer_CLI:*)",
+      "Bash(openocd:*)",
+      "Bash(docker:*)",
+      "Bash(git commit:*)",
+      "Bash(git tag -a:*)",
+      "Bash(git tag p:*)",
+      "Bash(git push:*)",
+      "Bash(git rebase:*)",
+      "Bash(git reset:*)",
+      "Bash(git checkout --:*)",
+      "Bash(pip install:*)",
+      "Bash(brew install:*)",
+      "Bash(apt-get:*)"
+    ],
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(st-flash erase:*)",
+      "Edit(/fw/*/Drivers/**)",
+      "Write(/fw/*/Drivers/**)",
+      "Edit(/fw/*/cmake/stm32cubemx/**)",
+      "Write(/fw/*/cmake/stm32cubemx/**)",
+      "Read(./.env)",
+      "Read(./**/*.pem)"
+    ]
+  },
+  "env": {
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/.claude/hooks/session_context.py\"; [ -f \"$f\" ] || exit 0; python3 \"$f\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_generated_code.py\"; [ -f \"$f\" ] || exit 0; python3 \"$f\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_results.py\"; [ -f \"$f\" ] || exit 0; python3 \"$f\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_bash.py\"; [ -f \"$f\" ] || exit 0; python3 \"$f\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/.claude/hooks/format_changed.py\"; [ -f \"$f\" ] || exit 0; python3 \"$f\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/.claude/hooks/ctrl_hal_free.py\"; [ -f \"$f\" ] || exit 0; python3 \"$f\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "ms-vscode-remote.remote-containers",
+    "ms-vscode.cpptools",
+    "ms-vscode.cmake-tools",
+    "marus25.cortex-debug",
+    "robocorp.robotframework-lsp",
+    "ms-python.python",
+    "charliermarsh.ruff",
+    "anthropic.claude-code",
+    "editorconfig.editorconfig"
+  ]
+}

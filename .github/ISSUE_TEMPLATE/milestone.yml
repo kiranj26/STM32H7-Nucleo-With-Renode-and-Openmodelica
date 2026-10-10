@@ -1,0 +1,40 @@
+name: Project milestone
+description: A milestone from docs/ROADMAP.md (one issue per milestone)
+title: "[P?] <milestone>"
+labels: ["milestone"]
+body:
+  - type: dropdown
+    id: project
+    attributes:
+      label: Project
+      options: [P0, P1, P2, P3, P4, P5, P6]
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What this milestone delivers, taken from the roadmap.
+    validations:
+      required: true
+  - type: checkboxes
+    id: tools
+    attributes:
+      label: Tool features exercised
+      options:
+        - label: Renode
+        - label: OpenModelica
+        - label: Robot Framework
+        - label: Control concept
+        - label: STM32 / CubeMX
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: Concrete, checkable outcome (command plus expected result).
+    validations:
+      required: true
+  - type: textarea
+    id: learning
+    attributes:
+      label: 🎓 Steps I'll do by hand

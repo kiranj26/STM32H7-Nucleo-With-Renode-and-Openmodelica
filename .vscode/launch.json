@@ -1,0 +1,32 @@
+{
+  // Cortex-Debug configurations. Set "project" via the input prompt (e.g. p1_thermal).
+  "version": "0.2.0",
+  "inputs": [
+    { "id": "project", "type": "promptString", "description": "Project folder (e.g. p0_blinky)", "default": "p0_blinky" }
+  ],
+  "configurations": [
+    {
+      "name": "Renode: attach GDB (:3333)",
+      "type": "cortex-debug",
+      "request": "attach",
+      "servertype": "external",
+      "gdbTarget": "localhost:3333",
+      "gdbPath": "arm-none-eabi-gdb",
+      "executable": "${workspaceFolder}/build/fw/${input:project}/${input:project}.elf",
+      "cwd": "${workspaceFolder}",
+      "showDevDebugOutput": "none",
+      "preAttachCommands": ["monitor start"]
+    },
+    {
+      "name": "Board: ST-LINK (OpenOCD) launch",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "openocd",
+      "configFiles": ["interface/stlink.cfg", "target/stm32h7x.cfg"],
+      "gdbPath": "arm-none-eabi-gdb",
+      "executable": "${workspaceFolder}/build/fw/${input:project}/${input:project}.elf",
+      "cwd": "${workspaceFolder}",
+      "runToEntryPoint": "main"
+    }
+  ]
+}

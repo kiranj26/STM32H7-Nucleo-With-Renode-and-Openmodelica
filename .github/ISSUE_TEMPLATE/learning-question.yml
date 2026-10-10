@@ -1,0 +1,22 @@
+name: Learning question
+description: Something to understand properly (it becomes a docs/notes entry)
+title: "[learn] <topic>"
+labels: ["learning"]
+body:
+  - type: input
+    id: topic
+    attributes:
+      label: Topic
+      placeholder: e.g. Renode global quantum vs. co-sim accuracy
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Where it came up
+      description: Project, file, and what confused you.
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: My current understanding
+      description: Write your guess first. It makes the answer stick.

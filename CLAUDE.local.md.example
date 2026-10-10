@@ -1,0 +1,15 @@
+# CLAUDE.local.md (personal, gitignored)
+
+Copy this file to `CLAUDE.local.md` to give Claude notes that apply only to you or this machine.
+
+## My setup
+- Board serial port: `/dev/cu.usbmodem14203`
+- Container runtime: OrbStack
+- CubeMX: `/Applications/STMicroelectronics/STM32CubeMX.app` (6.18), STM32CubeH7 pack installed: yes/no
+
+## How I want to work right now
+- Learning focus this week: Renode `.repl` syntax, so explain every monitor command you use.
+- I want to write the PID myself; only review it.
+
+## Scratch reminders
+- The board's ST-LINK firmware needs an update before P3.
