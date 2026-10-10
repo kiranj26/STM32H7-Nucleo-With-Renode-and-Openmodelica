@@ -46,6 +46,7 @@ Legend: `[ ]` planned · `[x]` demonstrated (with link)
 | Feature | Planned in | Status / evidence |
 |---|---|---|
 | Renode keywords (`Create Terminal Tester`, `Wait For Line On Uart`) | P0 | [ ] |
+| Reading `log.html` / `report.html` | P0 | [ ] |
 | Suite Setup/Teardown with processes | P1 | [ ] |
 | Variables and `${TARGET}` switching | P1 | [ ] |
 | `Test Template` (data-driven) | P2 | [ ] |

@@ -87,5 +87,5 @@ Note: the Makefile, devcontainer, `tools/labkit`, and `tests/common` don't exist
 
 ## Current status
 <!-- Updated by the close-project skill. -->
-- Active project: **P0: Toolchain warm-up** (not started)
+- Active project: **P0: Toolchain warm-up** (scaffolded on `p0/scaffold`; next: CubeMX per `fw/p0_blinky/CUBEMX.md`)
 - Completed: none
