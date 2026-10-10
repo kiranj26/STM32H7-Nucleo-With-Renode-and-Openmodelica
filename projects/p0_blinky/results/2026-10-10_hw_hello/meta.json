@@ -1,0 +1,31 @@
+{
+  "project": "p0_blinky",
+  "level": "HW",
+  "date": "2026-10-10",
+  "description": "Boot banner and Hello <n> on USART3 (ST-LINK VCP), captured on the macOS host after an SWD reset",
+  "board": "NUCLEO-H743ZI2 (STM32H743ZIT6 rev V)",
+  "firmware": {
+    "elf": "fw/p0_blinky/build/Debug/p0_blinky.elf",
+    "build_type": "Debug",
+    "built_with": "cmake --preset Debug (CubeMX CMakePresets.json), not yet via make fw",
+    "toolchain": "Arm GNU Toolchain 15.3.Rel1 (Homebrew, macOS host)",
+    "hal": "STM32Cube FW_H7 V1.13.0, STM32CubeMX 6.18",
+    "size_bytes": {"text": 23848, "data": 96, "bss": 2056},
+    "git_commit": "uncommitted working tree on p0/scaffold (base 9c970ce)"
+  },
+  "capture": {
+    "port": "/dev/cu.usbmodem31403",
+    "baud": 115200,
+    "duration_s": 20,
+    "reset": "st-flash reset (SWD), stale VCP bytes drained before reset",
+    "timestamps": "host wall clock (Time::HiRes), per USB read; ~+/-3 ms jitter"
+  },
+  "results": {
+    "boot_banner_seen": true,
+    "hello_lines": 41,
+    "hello_interval_ms": {"mean": 495.13, "min": 492.0, "max": 498.0, "n_intervals": 39},
+    "expected_interval_ms": "~501-502 (HAL_Delay(500) waits 501 ticks + ~0.9 ms UART TX)",
+    "deviation_pct": -1.3,
+    "notes": "Board time runs ~1.3% fast relative to the host clock; cause not yet investigated (see README section 6)."
+  }
+}

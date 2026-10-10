@@ -14,6 +14,8 @@ snap/
 *.makefile
 *.libs
 *.log
+# ...but logs inside committed results are evidence (CLAUDE.md hard rule 6)
+!projects/*/results/**/*.log
 
 # Python
 __pycache__/

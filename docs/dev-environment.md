@@ -43,7 +43,7 @@ Fill this table when the Dockerfile is written; update it on every upgrade, with
 | Python | 3.11 | | |
 | robotframework / fmpy / OMPython / pyrenode3 | | `requirements.txt` | |
 | STM32CubeMX (host) | 6.18 | st.com | 2026-10-10 |
-| STM32CubeH7 pack (host) | | CubeMX package manager | |
+| STM32CubeH7 pack (host) | FW_H7 V1.13.0 | CubeMX package manager | 2026-10-10 |
 
 ## Upgrade policy
 Upgrade only between projects, never in the middle of one. Record the upgrade in an ADR if it changes behavior (for example a Renode platform change).
