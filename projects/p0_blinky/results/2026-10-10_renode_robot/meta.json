@@ -1,0 +1,18 @@
+{
+  "project": "p0_blinky",
+  "level": "Renode",
+  "date": "2026-10-10",
+  "command": "make test P=p0 (devcontainer h7lab:dev)",
+  "elf": "build/fw/p0_blinky/p0_blinky.elf",
+  "elf_sha256": "83fb05c507632b73019327b95645bb5bc85d167b0245368542a57a861ce46c02",
+  "bin_sha256": "50ac07ca1e48ebadfb8f57424b059e734b809cbb21cb96350c153568a8cb5eaf",
+  "renode": "1.17.0 + projects/p0_blinky/renode/p0_overlay.repl",
+  "robotframework": "6.1",
+  "git_commit": "7382bf0-dirty (overlay, suite and Makefile uncommitted at run time)",
+  "results": {
+    "tests": 4, "passed": 4,
+    "hello_period_ms_virtual": 500.999,
+    "boot_banner_virtual_us": 25.23,
+    "host_wall_s": 21
+  }
+}

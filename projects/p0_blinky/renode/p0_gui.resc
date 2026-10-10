@@ -1,0 +1,7 @@
+:name: P0 Blinky (GUI)
+:description: Interactive variant of p0.resc - opens a UART window for USART3 (ST-LINK VCP).
+
+# Usage (needs a display, e.g. Renode on the macOS host):  renode projects/p0_blinky/renode/p0_gui.resc
+# p0.resc stays headless for Robot/CI; this file only adds the window.
+include @projects/p0_blinky/renode/p0.resc
+showAnalyzer sysbus.usart3

@@ -10,8 +10,8 @@ using sysbus
 mach create $name
 
 machine LoadPlatformDescription @platforms/cpus/stm32h743.repl
-# Project overlay: fixes and additions on top of the upstream platform (create when needed)
-# machine LoadPlatformDescription @projects/p0_blinky/renode/p0_overlay.repl
+# Project overlay: fixes on top of the upstream platform (DBGMCU identity = rev V board)
+machine LoadPlatformDescription @projects/p0_blinky/renode/p0_overlay.repl
 
 # Logs/console: ST-LINK VCP = USART3
 # Plant link (P1+): socket terminal bridged to the Python co-sim bridge

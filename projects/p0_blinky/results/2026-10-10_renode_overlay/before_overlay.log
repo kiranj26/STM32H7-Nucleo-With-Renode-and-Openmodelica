@@ -1,0 +1,27 @@
+[23:16:58.7659] [INFO] Loaded monitor commands from: /opt/renode/scripts/monitor.py
+[23:16:58.7887] [INFO] Monitor available in telnet mode on port 1234
+[23:16:58.8294] [INFO] Including script(s): /work/projects/p0_blinky/renode/p0.resc
+[23:16:58.8532] [INFO] System bus created.
+[23:17:00.0573] [INFO] Pseudorandom Number Generator was created with seed: 1069220186
+[23:17:00.1933] [INFO] sysbus: Loading block of 23856 bytes length at 0x8000000.
+[23:17:00.1983] [INFO] sysbus: Loading block of 612 bytes length at 0x8005D30.
+[23:17:00.1989] [INFO] sysbus: Loading block of 1540 bytes length at 0x8005D90.
+[23:17:00.3042] [INFO] cpu: Guessing VectorTableOffset value to be 0x8000000.
+[23:17:00.3212] [INFO] cpu: Setting initial values: PC = 0x8004EE1, SP = 0x20020000.
+[23:17:00.3248] [INFO] p0_blinky: Machine started.
+[23:17:00.3938] [WARNING] sysbus: [cpu: 0x80004CC] ReadDoubleWord from non existing peripheral at 0x5C001000.
+[23:17:00.3950] [WARNING] sysbus: [cpu: 0x80004DC] (tag: 'GPV_matrix_(AXIM)') WriteDoubleWord to non existing peripheral at 0x51008108, value 0x1.
+[23:17:00.4216] [WARNING] syscfg: Unhandled read from offset 0x2C.
+[23:17:00.4222] [WARNING] syscfg: Unhandled write to offset 0x2C, value 0x0.
+[23:17:00.4223] [WARNING] syscfg: Unhandled read from offset 0x2C.
+[23:17:00.4274] [WARNING] rcc: Unhandled write to offset 0x0. Unhandled bits: [18] when writing value 0x40025. Tags: HSEBYP (0x1).
+[23:17:00.4305] [WARNING] rcc: Unhandled write to offset 0x2C. Unhandled bits: [2-3] when writing value 0x1FF000C. Tags: PLL1GRE (0x3).
+[23:17:00.4306] [WARNING] rcc: Unhandled write to offset 0x2C. Unhandled bits: [0] when writing value 0x1FF0001. Tags: PLL1FRACEN (0x1).
+[23:17:00.4503] [WARNING] usart3: Unhandled read from offset 0x2C.
+[23:17:00.4504] [WARNING] usart3: Unhandled write to offset 0x2C, value 0x0.
+[23:17:00.4555] [INFO] usart3: [host: 0.23s (+0.23s)|virt: 25.26µs (+25.26µs)] P0 blinky boot
+[23:17:00.4591] [INFO] usart3: [host: 0.23s (+3.74ms)|virt:      25.26µs (+0s)] Hello 0
+[23:17:02.4984] [INFO] usart3: [host:  2.27s (+2.04s)|virt:       0.5s (+0.5s)] Hello 1
+[23:17:04.4481] [INFO] usart3: [host:  4.22s (+1.95s)|virt:         1s (+0.5s)] Hello 2
+[23:17:05.2157] [INFO] p0_blinky: Machine paused.
+[23:17:05.2948] [INFO] p0_blinky: Disposed.

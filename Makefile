@@ -16,6 +16,7 @@ FW_DIR    := $(if $(P),$(firstword $(wildcard fw/$(P)_*)),)
 NAME      := $(notdir $(FW_DIR))
 BUILD_DIR := build/fw/$(NAME)
 ELF       := $(BUILD_DIR)/$(NAME).elf
+ROBOT_OUT := $(CURDIR)/build/robot/$(P)
 
 # make hw settings (override on the command line, e.g. HW_DESC=hw_retest)
 HW_PORT    ?= $(firstword $(wildcard /dev/cu.usbmodem*))
@@ -64,8 +65,15 @@ hw: ## Flash P and capture UART evidence into a dated results folder (macOS host
 	  > $(HW_RUN_DIR)/meta.json
 	@echo "hw: $$(grep -c Hello $(HW_RUN_DIR)/uart.log) Hello lines -> $(HW_RUN_DIR)/"
 
-test: ## Robot suite for P (P0 step F) - not written yet
-	@echo "make test: not written yet (P0 step F: tests/common/renode.resource + robot suite)"; exit 2
+test: ## Robot suite for P on Renode -> build/robot/pN/ (container; TAGS=smoke to filter)
+	@test -n "$${IN_DEVCONTAINER:-}" || { echo "error: make test runs in the devcontainer (Renode + Robot live there)"; exit 2; }
+	$(require_project)
+	@test "$(TARGET)" = renode || { echo "error: TARGET=$(TARGET) not supported yet (P0 has renode only; mil/sil/hw come in P1+)"; exit 2; }
+	@test -f $(ELF) || { echo "error: no $(ELF) - run 'make fw P=$(P)' first"; exit 2; }
+	rm -rf $(ROBOT_OUT) && mkdir -p $(ROBOT_OUT)
+	# renode-test writes its reports into the current directory, so run it from the output folder
+	cd $(ROBOT_OUT) && renode-test $(CURDIR)/projects/$(NAME)/robot/*.robot \
+	    $(if $(TAGS),--include $(TAGS)) --variable TARGET:$(TARGET)
 
 sim: ## Run the project's .mos script (P0 step G) - not written yet
 	@echo "make sim: not written yet (P0 step G: RC models)"; exit 2
