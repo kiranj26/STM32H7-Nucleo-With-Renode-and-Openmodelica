@@ -10,7 +10,7 @@ Legend: `[ ]` planned · `[x]` demonstrated (with link)
 | `.resc` script: `mach create`, `LoadPlatformDescription`, `LoadELF` | P0 | [x] [p0.resc](../projects/p0_blinky/renode/p0.resc) |
 | `showAnalyzer` / UART terminal | P0 | [x] [p0_gui.resc](../projects/p0_blinky/renode/p0_gui.resc); headless `LoggingUartAnalyzer` in [logs](../projects/p0_blinky/results/2026-10-10_renode_overlay/) |
 | Reading and annotating the platform `.repl` | P0 | [x] [stm32h743_annotated.repl](../projects/p0_blinky/renode/stm32h743_annotated.repl) |
-| `logLevel`, `LogPeripheralAccess` | P0–P1 | [ ] |
+| `logLevel`, `LogPeripheralAccess` | P0–P1 | [ ] deferred to P1: no committed evidence in P0 (no boot hang to hunt; used only in an uncommitted lab) |
 | Overlay `.repl` fixing an unmodeled register | P0 | [x] [p0_overlay.repl](../projects/p0_blinky/renode/p0_overlay.repl) (DBGMCU_IDC, Python peripheral) |
 | Socket terminal (`CreateServerSocketTerminal`) and an external bridge | P1 | [ ] |
 | Snapshots `Save`/`Load` | P2 | [ ] |
@@ -27,7 +27,7 @@ Legend: `[ ]` planned · `[x]` demonstrated (with link)
 ## OpenModelica
 | Feature | Planned in | Status / evidence |
 |---|---|---|
-| OMEdit graphical model | P0 | [ ] component model with diagram annotations written as text ([RC_Graphical.mo](../projects/p0_blinky/model/RC_Graphical.mo)); not yet opened/drawn in OMEdit |
+| OMEdit graphical model | P0 | [ ] component model with diagram annotations written as text ([RC_Graphical.mo](../projects/p0_blinky/model/RC_Graphical.mo)); not yet opened/drawn in OMEdit; deferred to P1 |
 | Text equations model | P0 | [x] [RC_Equations.mo](../projects/p0_blinky/model/RC_Equations.mo) |
 | `.mos` scripting (`loadModel`, `simulate`, `getErrorString`) | P0–P1 | [x] [p0.mos](../projects/p0_blinky/scripts/p0.mos) |
 | Solver and tolerance study | P1 | [ ] |

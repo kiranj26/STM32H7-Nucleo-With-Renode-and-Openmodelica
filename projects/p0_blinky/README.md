@@ -1,6 +1,6 @@
 # P0: Toolchain warm-up (Blinky)
 
-> Status: ✅ complete 2026-10-11: all "done when" items met, CI green, evidence in `results/` (PR #3 + follow-up PR merged; tag `p0-done`). Open items for later are listed in §6 and marked _open_. · Time spent: ~__ h
+> Status: ✅ complete 2026-10-11: all "done when" items met, CI green, evidence in `results/` (PR #3 + follow-up PR merged; tag `p0-done`). Open items for later are listed in §6 and marked _open_. · Time spent: not tracked
 
 ## 1. Goal
 Get every tool producing output **independently** before connecting anything. CubeMX generates a CMake project for the NUCLEO-H743ZI2 that blinks LD1 (PB0) and prints `Hello <n>` on USART3 (ST-LINK VCP, 115200 baud). The **same ELF** (built in the devcontainer) boots in Renode, where a Robot suite checks it, and runs on the real board. Separately, OpenModelica simulates an RC circuit twice, from library components and as a hand-written ODE, and compares both with the analytic answer. There's no closed loop yet; the point is to know what each tool does on its own, and where the Renode H743 platform model stops matching the silicon.
@@ -34,7 +34,7 @@ Get every tool producing output **independently** before connecting anything. Cu
 | Renode | 🎓 `showAnalyzer` on USART3 (GUI variant); `LoggingUartAnalyzer` (headless, virtual-time stamps) | [p0_gui.resc#L7](renode/p0_gui.resc#L7), [overlay run logs](results/2026-10-10_renode_overlay/) |
 | Renode | 🎓 Reading and annotating the H743 `.repl` (memory map, NVIC, models vs. stubs vs. tags, missing peripherals, fixed clocks) | [stm32h743_annotated.repl](renode/stm32h743_annotated.repl) |
 | Renode | 🎓 Overlay `.repl` with a Python peripheral fixing an unmodeled register (DBGMCU_IDC) | [p0_overlay.repl#L19](renode/p0_overlay.repl#L19) |
-| Renode | Interactive monitor (`renode --console`): `cpu PC`, `sysbus FindSymbolAt`, `LogPeripheralAccess`, `sysbus Read/WriteDoubleWord` to start and read TIM2/DWT | [renode_clock_check.sh](scripts/renode_clock_check.sh) |
+| Renode | Monitor commands `sysbus WriteDoubleWord` / `ReadDoubleWord` to start and read TIM2/DWT against virtual time | [renode_clock_check.sh](scripts/renode_clock_check.sh) |
 | Renode | `path add` (search path for repo-relative `@paths`); `sysbus ReadDoubleWord` from a test | [renode.resource#L22](../../tests/common/renode.resource#L22), [p0_blinky.robot#L37](robot/p0_blinky.robot#L37) |
 | OpenModelica | 🎓 RC circuit from MSL components with `connect()` + diagram annotations | [RC_Graphical.mo#L19](model/RC_Graphical.mo#L19) |
 | OpenModelica | 🎓 RC circuit as a hand-written ODE with units and an explicit initial condition | [RC_Equations.mo#L14](model/RC_Equations.mo#L14) |
@@ -45,6 +45,8 @@ Get every tool producing output **independently** before connecting anything. Cu
 | Robot | Reading `log.html` / `report.html` | [archived run](results/2026-10-10_renode_robot/) |
 | CI | GitHub Actions: same Dockerfile (buildx + GHA cache), only `make` targets, evidence artifact | [ci.yml](../../.github/workflows/ci.yml) |
 | Control | (none in P0) | |
+
+**Gaps (deferred to P1):** two roadmap P0 features have no committed evidence. (1) **OMEdit:** `RC_Graphical.mo` carries diagram annotations written as text; it was never opened or drawn in OMEdit (no display in the container; the XQuartz route was set up but skipped). (2) **`LogPeripheralAccess` / `cpu PC` boot-hang hunt:** used only in an uncommitted learning lab; P0 had no boot hang to hunt (§6). Both are carried into P1, where the first new peripheral gives a real reason to use them.
 
 ## 4. How to run (and what to expect)
 Everything below was run on 2026-10-11 with the pinned image; the "Expect" lines are real outputs. Two places run commands:
@@ -121,14 +123,14 @@ Every number links to a dated run folder. Levels: **HW** = the physical board, *
 
 | Metric | Requirement | Renode | HW |
 |---|---|---|---|
-| Boot banner + `Hello <n>` on USART3 | banner ≤ 1 s virtual (REQ-P0-01/02) | ✅ banner at 25.23 µs virtual ([run](results/2026-10-10_renode_robot/)) | ✅ Mac ELF ([run](results/2026-10-10_hw_hello/)) and canonical ELF `50ac07ca…` ([run](results/2026-10-10_hw_container_elf/)), LD1 blinking |
-| Emulated chip identity | DBGMCU_IDC = 0x20030450, rev V (REQ-P0-03) | ✅ ([run](results/2026-10-10_renode_robot/), [before/after logs](results/2026-10-10_renode_overlay/)) | rev V per CubeMX |
-| LD1 (PB0) toggles between `Hello` lines | GPIOB ODR bit 0 differs (REQ-P0-05) | ✅ `0x0` → `0x1` ([run](results/2026-10-11_renode_robot/), 5/5 tests) | ✅ LD1 seen blinking |
+| Boot banner + `Hello <n>` on USART3 | banner ≤ 1 s virtual (REQ-P0-01/02) | ✅ banner at 25.23 µs virtual ([run](results/2026-10-10_renode_robot/)) | ✅ Mac ELF ([run](results/2026-10-10_hw_hello/)) and canonical ELF `50ac07ca…` ([run](results/2026-10-10_hw_container_elf/)), LD1 blinking (visual) |
+| Emulated chip identity | DBGMCU_IDC = 0x20030450, rev V (REQ-P0-03) | ✅ ([run](results/2026-10-10_renode_robot/); supporting [before/after logs](results/2026-10-10_renode_overlay/), raw logs only, no `meta.json`) | not read on the board (rev V assumed from CubeMX/board marking) |
+| LD1 (PB0) toggles between `Hello` lines | GPIOB ODR bit 0 differs (REQ-P0-05) | ✅ `0x0` → `0x1` ([run](results/2026-10-11_renode_robot/), 5/5 tests) | ✅ LD1 seen blinking (visual observation, no artifact) |
 | `Hello` period | 501 ± 1 ms virtual (REQ-P0-04) | ✅ 500.999 ms ([run](results/2026-10-10_renode_robot/)) | ⚠️ 495.1 / 495.3 ms (two ELFs, n = 39 each): −1.31 % vs. 501.9 ms expected incl. UART TX ([analysis](results/2026-10-10_timing_comparison/)) |
 | RC: graphical vs. equations, max \|Δv\| | ≈ 0 | **MIL:** 0.0 V exactly ([run, MSL 4.0.0](results/2026-10-11_mil_rc_msl400/); identical in the [first run](results/2026-10-10_mil_rc/), which used 4.1.0, see §6) | N/A |
 | RC: equations vs. analytic, max \|Δv\| | ≤ rtol × 3.3 V ≈ 3.3 µV order | **MIL:** 3.8 µV; v(τ) = 2.085997 V vs. 2.085998 V expected ([run, MSL 4.0.0](results/2026-10-11_mil_rc_msl400/)) | N/A |
 
-![RC circuit, MIL](results/2026-10-10_mil_rc/rc_compare.png)
+![RC circuit, MIL](results/2026-10-11_mil_rc_msl400/rc_compare.png)
 
 ![Hello period, HW vs. Renode](results/2026-10-10_timing_comparison/hello_period.png)
 
@@ -154,7 +156,13 @@ Every number links to a dated run folder. Levels: **HW** = the physical board, *
 - **OMPython session hangs in the devcontainer** (found in the M9 lab): `OMCSessionLocal()` never returned within 90 s (the older `OMCSessionZMQ` also stalled). Not needed in P0 (we drive `omc` with `.mos` scripts), but P2 plans OMPython parameter sweeps. _Open: debug before P2._
 
 ## 7. What I'd do differently
-<!-- Written by me, not generated. -->
+_Drafted by Claude at my request (2026-10-11) from this project's history._
+
+- **Do the 🎓 steps myself, not on autopilot.** Five of the six first-use steps (first `.resc`, overlay hunt, `.repl` annotation, RC models, first Robot test) were done by Claude on autopilot at my request (§8). I understood them later in the learning labs, but reading finished work is not the same as finding the DBGMCU warning myself. In P1, I drive the first use of every new tool feature.
+- **Re-check claims under the conditions they talk about.** The "timers stuck at 250 MHz" claim came from an empty machine; my own lab with the firmware loaded showed 200 MHz. The MSL check said "loads" while the library was 4.1.0. Both errors were checks that ran, but on the wrong question. A check must compare the exact thing claimed (a version string, a clock in the real configuration).
+- **Archive every hardware measurement, even practice runs.** Two `make hw` lab runs suggested the board clock drifts from day to day, but they were not archived, so that observation is anecdotal. A dated folder costs nothing; a lost measurement can't be repeated on demand.
+- **Measure the clock externally early.** The 1.3 % offset is still inferred from UART timestamps. Routing MCO1 to PA8 and looking at it with a scope (or an HSI A/B run) on day one would have turned a hypothesis into a fact.
+- **Decide what "canonical binary" means before the first flash.** The Mac and container `.bin` files differ (`libc_nano.a` member order). Building only in the container from the start would have avoided one investigation and one extra hardware run.
 
 ## 8. 🎓 Steps (who did what)
 Done by hand by me:
