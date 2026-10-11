@@ -1,0 +1,12 @@
+{
+  "project": "p0_blinky",
+  "level": "MIL",
+  "date": "2026-10-11",
+  "command": "make sim P=p0 (devcontainer h7lab:dev rebuilt with the exact MSL pin)",
+  "openmodelica": "1.27.1",
+  "msl": "4.0.0 (installPackage 4.0.0+maint.om, exactMatch=true; getVersion(Modelica) = \"4.0.0\" checked by make doctor)",
+  "solver": "dassl", "tolerance": 1e-6, "stop_time_s": 0.005, "intervals": 500,
+  "results": {"max_abs_graphical_minus_equations_V": 0.0, "max_abs_equations_minus_analytic_V": 3.828870366540116e-06},
+  "note": "Supersedes results/2026-10-10_mil_rc, whose meta.json says msl 4.0.0 but which actually ran with MSL 4.1.0 (unpinned install). Numbers are identical to the last digit.",
+  "git_commit": "8925467-dirty (MSL pin fix uncommitted at run time)"
+}

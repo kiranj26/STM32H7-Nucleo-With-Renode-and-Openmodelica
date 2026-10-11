@@ -33,13 +33,17 @@ check robotframework    python -c 'import robot; print("Robot Framework", robot.
 check fmpy              python -c 'import fmpy; print("FMPy", fmpy.__version__)'
 check OMPython          python -c 'import OMPython, importlib.metadata as m; print("OMPython", m.version("OMPython"))'
 
-# The Modelica Standard Library must load in the exact version the models use
+# The Modelica Standard Library must load in EXACTLY the pinned version. "It loads" is not
+# enough: OMC accepts 4.1.0 for a 4.0.0 request. The pin is read from the Dockerfile (one source).
+dockerfile="$(dirname "$0")/../.devcontainer/Dockerfile"
+want=$(sed -n 's/^ARG MSL_VERSION=\([0-9.]*\).*/\1/p' "$dockerfile" 2>/dev/null)
 msl=$(mktemp --suffix=.mos 2>/dev/null || mktemp)
-echo 'loadModel(Modelica, {"4.0.0"});' > "$msl"
-if command -v omc >/dev/null && [ "$(omc "$msl" 2>/dev/null | head -1)" = "true" ]; then
-    printf '  %-20s %s\n' "MSL" "Modelica 4.0.0 loads"
+printf 'loadModel(Modelica, {"%s"});\ngetVersion(Modelica);\n' "$want" > "$msl"
+got=$(command -v omc >/dev/null && omc "$msl" 2>/dev/null | sed -n 2p | tr -d '"')
+if [ -n "$want" ] && [ "$got" = "$want" ]; then
+    printf '  %-20s %s\n' "MSL" "Modelica $got (pinned $want)"
 else
-    printf '  %-20s MISSING\n' "MSL 4.0.0"
+    printf '  %-20s %s\n' "MSL" "MISMATCH: loaded '${got:-none}', pinned '${want:-?}'"
     fail=1
 fi
 rm -f "$msl"

@@ -1,0 +1,5 @@
+case           counts_per_1ms  Renode_MHz  board_MHz
+empty  TIM2            250000        250        200
+booted TIM2            200000        200        200
+empty  DWT             250000        250        400
+booted DWT             250000        250        400

@@ -50,3 +50,18 @@ Hello Period Matches HAL_Delay
     Log    period_ms=${period_ms} (Hello 1 at ${t1} ms, Hello 5 at ${t5} ms)    console=True
     Should Be True    abs(${period_ms} - ${HELLO_PERIOD_MS}) <= ${PERIOD_TOL_MS}
     ...    msg=period ${period_ms} ms is outside ${HELLO_PERIOD_MS} ± ${PERIOD_TOL_MS} ms
+
+LD1 Toggles Between Hello Lines
+    [Documentation]    REQ-P0-05: LD1 (PB0) changes state once per Hello line, i.e. the
+    ...                blinky really drives the GPIO, checked via GPIOB ODR bit 0.
+    [Tags]    smoke
+    Boot Project    ${PROJECT}
+    Wait For Line On Uart    Hello 1    timeout=1
+    ${odr_1}=    Execute Command    sysbus ReadDoubleWord 0x58020414
+    ${odr_1}=    Strip String    ${odr_1}
+    Wait For Line On Uart    Hello 2    timeout=1
+    ${odr_2}=    Execute Command    sysbus ReadDoubleWord 0x58020414
+    ${odr_2}=    Strip String    ${odr_2}
+    Log    GPIOB ODR after Hello 1 = ${odr_1}, after Hello 2 = ${odr_2}    console=True
+    Should Be True    (${odr_1} ^ ${odr_2}) & 1
+    ...    msg=PB0 (LD1) did not toggle between Hello 1 and Hello 2 (ODR ${odr_1} -> ${odr_2})

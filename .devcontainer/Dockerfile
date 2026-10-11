@@ -22,7 +22,8 @@ FROM --platform=linux/amd64 ubuntu:22.04@sha256:5ec03bb3441e8b0bf3b4f9cd4629a1ae
 ARG ARM_GNU_VERSION=15.3.rel2
 ARG ARM_GNU_SHA256=0662b2f01e0cd8b951fd110911d339c35b05998c68a12b3530bbbb4bf6c7874e
 ARG OMC_VERSION=1.27.1
-ARG MSL_VERSION=4.0.0
+# Exact package-index version: plain "4.0.0" silently installed 4.1.0 (P0 README section 6)
+ARG MSL_VERSION=4.0.0+maint.om
 ARG RENODE_VERSION=1.17.0
 ARG RENODE_SHA256=4ba7c68b59e2447f188ef4b4b112fcccd2802582c460beedceb63b84e5605a5f
 ARG PYTHON_VERSION=3.11
@@ -58,10 +59,13 @@ RUN curl -fsSL https://build.openmodelica.org/apt/openmodelica.asc \
     && apt-get update && apt-get install -y --no-install-recommends omc \
     && rm -rf /var/lib/apt/lists/*
 
-# Modelica Standard Library via OMC's package manager (fails the build if it can't install)
-RUN printf 'installPackage(Modelica, "%s"); getErrorString();\n' "${MSL_VERSION}" > /tmp/msl.mos \
+# Modelica Standard Library via OMC's package manager, EXACT version (with its matching
+# ModelicaServices/Complex). The build fails unless the library that loads reports exactly
+# the pinned version - "it loads" is not enough (OMC accepts 4.1.0 for a 4.0.0 request).
+RUN printf 'installPackage(Modelica, "%s", exactMatch=true); getErrorString();\nloadModel(Modelica); getErrorString();\ngetVersion(Modelica);\n' "${MSL_VERSION}" > /tmp/msl.mos \
     && omc /tmp/msl.mos | tee /tmp/msl.out \
     && grep -q '^true' /tmp/msl.out \
+    && grep -qx "\"${MSL_VERSION%%+*}\"" /tmp/msl.out \
     && rm /tmp/msl.mos /tmp/msl.out
 
 # --- Renode (portable build: self-contained .NET, includes renode-test) ------

@@ -1,0 +1,13 @@
+{
+  "project": "p0_blinky",
+  "level": "Renode",
+  "date": "2026-10-11",
+  "command": "bash projects/p0_blinky/scripts/renode_clock_check.sh (devcontainer h7lab:dev)",
+  "renode": "1.17.0 + projects/p0_blinky/renode/p0_overlay.repl",
+  "bin_sha256": "50ac07ca1e48ebadfb8f57424b059e734b809cbb21cb96350c153568a8cb5eaf",
+  "method": "TIM2 (PSC=0) CNT and DWT CYCCNT counted over 1 ms virtual time, on an empty platform vs. after the P0 firmware ran SystemClock_Config (RunFor 0.2 s)",
+  "results_counts_per_ms": {"empty_TIM2": 250000, "booted_TIM2": 200000, "empty_DWT": 250000, "booted_DWT": 250000},
+  "conclusion": "Renode's STM32H7_RCC re-times SysTick and timers from the firmware's clock config (TIM2 = 200 MHz = CubeMX); the .repl's 250 MHz is a start value. DWT stays at 250 MHz (board: 400 MHz CPU) -> cycle counts off by 1.6x.",
+  "found_by": "owner, M7 learning lab 6 (contradicted the earlier claim in fa4c047, which came from a run with no firmware loaded)",
+  "git_commit": "94abe9c-dirty (script uncommitted at run time)"
+}
