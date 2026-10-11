@@ -1,0 +1,17 @@
+{
+  "project": "p0_blinky",
+  "level": "Renode",
+  "date": "2026-10-11",
+  "command": "make test P=p0 (devcontainer, run by the owner)",
+  "elf": "build/fw/p0_blinky/p0_blinky.elf",
+  "bin_sha256": "50ac07ca1e48ebadfb8f57424b059e734b809cbb21cb96350c153568a8cb5eaf",
+  "renode": "1.17.0 + projects/p0_blinky/renode/p0_overlay.repl",
+  "robotframework": "6.1",
+  "git_commit": "bf26ce2-dirty (REQ-P0-05 test added, uncommitted at run time)",
+  "results": {
+    "tests": 5, "passed": 5,
+    "new": "REQ-P0-05 LD1 Toggles Between Hello Lines: GPIOB ODR 0x00000000 after Hello 1 -> 0x00000001 after Hello 2",
+    "hello_period_ms_virtual": 500.999,
+    "host_wall_s": 21.43
+  }
+}

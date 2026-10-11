@@ -40,6 +40,7 @@ Get every tool producing output **independently** before connecting anything. Cu
 | OpenModelica | 🎓 RC circuit as a hand-written ODE with units and an explicit initial condition | [RC_Equations.mo#L14](model/RC_Equations.mo#L14) |
 | OpenModelica | `.mos` scripting: `loadModel`, `loadFile`, `cd`, `simulate` (solver/tolerance explicit, CSV), `checkModel` | [p0.mos#L13-L27](scripts/p0.mos#L13-L27) |
 | Robot | 🎓 `Create Terminal Tester`, `Wait For Line On Uart` (virtual-time timeouts), result `Timestamp` | [renode.resource#L24-L30](../../tests/common/renode.resource#L24-L30), [p0_blinky.robot#L22](robot/p0_blinky.robot#L22) |
+| Robot | 🎓 My first test: `LD1 Toggles Between Hello Lines` (register read via `Execute Command`, XOR check) | [p0_blinky.robot](robot/p0_blinky.robot) (REQ-P0-05) |
 | Robot | Shared resource file, `smoke` tag, requirement-style test names, `renode-test` | [renode.resource](../../tests/common/renode.resource), [p0_blinky.robot](robot/p0_blinky.robot) |
 | Robot | Reading `log.html` / `report.html` | [archived run](results/2026-10-10_renode_robot/) |
 | CI | GitHub Actions: same Dockerfile (buildx + GHA cache), only `make` targets, evidence artifact | [ci.yml](../../.github/workflows/ci.yml) |
@@ -65,6 +66,7 @@ Every number links to a dated run folder. Levels: **HW** = the physical board, *
 |---|---|---|---|
 | Boot banner + `Hello <n>` on USART3 | banner ≤ 1 s virtual (REQ-P0-01/02) | ✅ banner at 25.23 µs virtual ([run](results/2026-10-10_renode_robot/)) | ✅ Mac ELF ([run](results/2026-10-10_hw_hello/)) and canonical ELF `50ac07ca…` ([run](results/2026-10-10_hw_container_elf/)), LD1 blinking |
 | Emulated chip identity | DBGMCU_IDC = 0x20030450, rev V (REQ-P0-03) | ✅ ([run](results/2026-10-10_renode_robot/), [before/after logs](results/2026-10-10_renode_overlay/)) | rev V per CubeMX |
+| LD1 (PB0) toggles between `Hello` lines | GPIOB ODR bit 0 differs (REQ-P0-05) | ✅ `0x0` → `0x1` ([run](results/2026-10-11_renode_robot/), 5/5 tests) | ✅ LD1 seen blinking |
 | `Hello` period | 501 ± 1 ms virtual (REQ-P0-04) | ✅ 500.999 ms ([run](results/2026-10-10_renode_robot/)) | ⚠️ 495.1 / 495.3 ms (two ELFs, n = 39 each): −1.31 % vs. 501.9 ms expected incl. UART TX ([analysis](results/2026-10-10_timing_comparison/)) |
 | RC: graphical vs. equations, max \|Δv\| | ≈ 0 | **MIL:** 0.0 V exactly ([run](results/2026-10-10_mil_rc/)) | N/A |
 | RC: equations vs. analytic, max \|Δv\| | ≤ rtol × 3.3 V ≈ 3.3 µV order | **MIL:** 3.8 µV; v(τ) = 2.085997 V vs. 2.085998 V expected ([run](results/2026-10-10_mil_rc/)) | N/A |
@@ -99,6 +101,7 @@ Done by hand by me:
 - [x] Create `p0_blinky.ioc` in CubeMX and generate CMake ([CUBEMX.md](../../fw/p0_blinky/CUBEMX.md)), 2026-10-10
 - [x] Wire `app/` into `main.c` USER CODE blocks and `CMakeLists.txt` (Claude supplied the snippets)
 - [x] Flash the board and see `Hello` + LD1 (first run); install the host toolchain; test the devcontainer in VS Code (11 checks)
+- [x] Learning labs (2026-10-11): two `make hw` runs (day-to-day clock drift, not archived), Renode monitor session that **disproved the "timers stuck at 250 MHz" claim** (corrected in `bf26ce2`), and REQ-P0-05 `LD1 Toggles Between Hello Lines` added and run 5/5 ([run](results/2026-10-11_renode_robot/); test text supplied by Claude, chosen, run and verified by me)
 
 Done by Claude on autopilot at my request (2026-10-10); **not yet done by hand**. Worth redoing as exercises:
 - [ ] First `.resc` boot in Renode ([p0.resc](renode/p0.resc))
