@@ -1,0 +1,28 @@
+:name: P0 Blinky
+:description: Boots the P0 firmware on the STM32H743 platform (plus the project overlay).
+
+# Overridable from Robot / CLI:  renode -e '$bin=@...' pN.resc
+$name?="p0_blinky"
+$bin?=@build/fw/p0_blinky/p0_blinky.elf
+$plant_port?=4321
+
+using sysbus
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/stm32h743.repl
+# Project overlay: fixes on top of the upstream platform (DBGMCU identity = rev V board)
+machine LoadPlatformDescription @projects/p0_blinky/renode/p0_overlay.repl
+
+# Logs/console: ST-LINK VCP = USART3
+# Plant link (P1+): socket terminal bridged to the Python co-sim bridge
+# emulation CreateServerSocketTerminal $plant_port "plant" false
+# connector Connect sysbus.usart2 plant
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+runMacro $reset
+
+# GUI conveniences live in p0_gui.resc (which does `include @.../p0.resc` then
+# `showAnalyzer sysbus.usart3`), because .resc has no conditionals and this file must stay headless.

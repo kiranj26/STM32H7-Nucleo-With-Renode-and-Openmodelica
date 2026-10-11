@@ -1,0 +1,15 @@
+{
+  "level": "MIL",
+  "R_ohm": 1000.0,
+  "C_F": 1e-06,
+  "V0_V": 3.3,
+  "tau_s": 0.001,
+  "solver": "dassl",
+  "tolerance": 1e-06,
+  "n_points": 502,
+  "max_abs_graphical_minus_equations_V": 0.0,
+  "max_abs_equations_minus_analytic_V": 3.828870366540116e-06,
+  "v_at_tau_V": 2.085997446023935,
+  "v_at_tau_expected_V": 2.08599784413424,
+  "v_final_V": 3.277763220078091
+}

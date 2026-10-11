@@ -1,0 +1,25 @@
+[23:17:07.3413] [INFO] Loaded monitor commands from: /opt/renode/scripts/monitor.py
+[23:17:07.3626] [INFO] Monitor available in telnet mode on port 1234
+[23:17:07.4004] [INFO] Including script(s): /work/projects/p0_blinky/renode/p0.resc
+[23:17:07.4239] [INFO] System bus created.
+[23:17:08.6270] [INFO] Pseudorandom Number Generator was created with seed: 1544758866
+[23:17:08.7724] [INFO] sysbus: Loading block of 23856 bytes length at 0x8000000.
+[23:17:08.7778] [INFO] sysbus: Loading block of 612 bytes length at 0x8005D30.
+[23:17:08.7784] [INFO] sysbus: Loading block of 1540 bytes length at 0x8005D90.
+[23:17:08.8984] [INFO] cpu: Guessing VectorTableOffset value to be 0x8000000.
+[23:17:08.9148] [INFO] cpu: Setting initial values: PC = 0x8004EE1, SP = 0x20020000.
+[23:17:08.9206] [INFO] p0_blinky: Machine started.
+[23:17:09.0175] [WARNING] syscfg: Unhandled read from offset 0x2C.
+[23:17:09.0181] [WARNING] syscfg: Unhandled write to offset 0x2C, value 0x0.
+[23:17:09.0182] [WARNING] syscfg: Unhandled read from offset 0x2C.
+[23:17:09.0233] [WARNING] rcc: Unhandled write to offset 0x0. Unhandled bits: [18] when writing value 0x40025. Tags: HSEBYP (0x1).
+[23:17:09.0262] [WARNING] rcc: Unhandled write to offset 0x2C. Unhandled bits: [2-3] when writing value 0x1FF000C. Tags: PLL1GRE (0x3).
+[23:17:09.0262] [WARNING] rcc: Unhandled write to offset 0x2C. Unhandled bits: [0] when writing value 0x1FF0001. Tags: PLL1FRACEN (0x1).
+[23:17:09.0462] [WARNING] usart3: Unhandled read from offset 0x2C.
+[23:17:09.0463] [WARNING] usart3: Unhandled write to offset 0x2C, value 0x0.
+[23:17:09.0517] [INFO] usart3: [host: 0.24s (+0.24s)|virt: 25.23µs (+25.23µs)] P0 blinky boot
+[23:17:09.0554] [INFO] usart3: [host: 0.25s (+4.03ms)|virt:      25.23µs (+0s)] Hello 0
+[23:17:11.1122] [INFO] usart3: [host:   2.3s (+2.06s)|virt:       0.5s (+0.5s)] Hello 1
+[23:17:13.0955] [INFO] usart3: [host:  4.29s (+1.98s)|virt:         1s (+0.5s)] Hello 2
+[23:17:13.8974] [INFO] p0_blinky: Machine paused.
+[23:17:13.9772] [INFO] p0_blinky: Disposed.

@@ -1,0 +1,4 @@
+# The image build only needs requirements.txt; send nothing else to Docker
+# (keeps fw/Drivers, build/ and .git out of the build context).
+*
+!requirements.txt

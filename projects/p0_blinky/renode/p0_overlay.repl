@@ -1,0 +1,27 @@
+// P0 overlay on top of @platforms/cpus/stm32h743.repl (Renode 1.17.0).
+// Each entry: the symptom seen in Renode, the cause, and the RM0433 reference.
+
+// ---------------------------------------------------------------------------
+// DBGMCU (RM0433, debug chapter: DBGMCU_IDC identity code register, 0x5C001000;
+//         CMSIS: DBGMCU->IDCODE in stm32h743xx.h)
+// Symptom: "ReadDoubleWord from non existing peripheral at 0x5C001000" followed by
+//          "WriteDoubleWord to ... 0x51008108 (tag GPV_matrix_(AXIM))".
+// Cause:   DBGMCU isn't modeled, so IDCODE reads 0. SystemInit()
+//          (Core/Src/system_stm32h7xx.c:262) treats REV_ID < 0x2000 as silicon
+//          revision Y and applies the rev-Y AXI switch-matrix errata write.
+//          The NUCLEO-H743ZI2 is revision V (REV_ID 0x2003), which skips it,
+//          so the emulated boot path differed from the real board.
+// Fix:     report the board's identity: REV_ID 0x2003 (rev V), DEV_ID 0x450.
+//          Reserved bits 15:12 are left 0 (HAL only uses 31:16 and 11:0).
+//          Python peripheral = prototype per .claude/rules/renode.md; it is
+//          read-only identity data, so there is nothing to grow into C# yet.
+// ---------------------------------------------------------------------------
+dbgmcu: Python.PythonPeripheral @ sysbus 0x5C001000
+    size: 0x400
+    initable: false
+    script: '''
+if request.Offset == 0x00: # IDCODE
+    request.Value = 0x20030450
+else:
+    request.Value = 0
+'''

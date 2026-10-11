@@ -1,0 +1,11 @@
+{
+  "project": "p0_blinky",
+  "level": "HW",
+  "date": "2026-10-10",
+  "bin": "build/fw/p0_blinky/p0_blinky.bin",
+  "bin_sha256": "50ac07ca1e48ebadfb8f57424b059e734b809cbb21cb96350c153568a8cb5eaf",
+  "git_commit": "1bb9c43-dirty",
+  "port": "/dev/cu.usbmodem31403",
+  "baud": 115200,
+  "duration_s": 20
+}
