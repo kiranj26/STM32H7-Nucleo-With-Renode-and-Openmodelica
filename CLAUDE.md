@@ -83,9 +83,9 @@ There is no USB passthrough into Docker on macOS. **CubeMX, flashing, and serial
 - [ ] The project README has Goal, Features used (linked), Problems hit and fixes, Results, and What I'd do differently
 - [ ] `docs/feature-checklist.md` is updated, and the `pN-done` tag is created (via the `/close-project` skill)
 
-Note: the Makefile, devcontainer, `tools/labkit`, and `tests/common` don't exist yet. They're built during P0, so if a command above fails, check whether its P0 milestone has been done.
+Note: the Makefile, devcontainer and `tests/common` exist since P0 (`make doctor/lint/fw/sim/test/hw`). `make unit` and `make fmu` are stubs until P1, and `tools/labkit` doesn't exist yet (P1). The **container-built ELF is canonical**: `make fw` refuses to run on the host (see `docs/dev-environment.md`).
 
 ## Current status
 <!-- Updated by the close-project skill. -->
-- Active project: **P0: Toolchain warm-up** (scaffolded on `p0/scaffold`; next: CubeMX per `fw/p0_blinky/CUBEMX.md`)
+- Active project: **P0: Toolchain warm-up**: all milestones done on `p0/scaffold` (PR #3); remaining: owner review, README §7, merge, `p0-done` tag
 - Completed: none

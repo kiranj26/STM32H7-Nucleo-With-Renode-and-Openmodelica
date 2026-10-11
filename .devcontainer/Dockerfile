@@ -12,6 +12,8 @@
 # uv: Python installer/resolver (copied in as a single static binary)
 FROM ghcr.io/astral-sh/uv:0.12.20 AS uv
 
+# The constant --platform is deliberate (BuildKit warns FromPlatformFlagConstDisallowed):
+# ADR-0002 requires amd64 everywhere, and this stops an accidental arm64 build on the Mac.
 FROM --platform=linux/amd64 ubuntu:22.04@sha256:5ec03bb3441e8b0bf3b4f9cd4629a1ae763010dc3035bb8da3ae6cf026486401
 
 # rel2 = compiler build arm-15.180, the same build as the macOS host cask.

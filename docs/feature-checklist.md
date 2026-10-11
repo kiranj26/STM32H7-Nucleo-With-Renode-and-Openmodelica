@@ -7,11 +7,11 @@ Legend: `[ ]` planned · `[x]` demonstrated (with link)
 ## Renode
 | Feature | Planned in | Status / evidence |
 |---|---|---|
-| `.resc` script: `mach create`, `LoadPlatformDescription`, `LoadELF` | P0 | [ ] |
-| `showAnalyzer` / UART terminal | P0 | [ ] |
-| Reading and annotating the platform `.repl` | P0 | [ ] |
+| `.resc` script: `mach create`, `LoadPlatformDescription`, `LoadELF` | P0 | [x] [p0.resc](../projects/p0_blinky/renode/p0.resc) |
+| `showAnalyzer` / UART terminal | P0 | [x] [p0_gui.resc](../projects/p0_blinky/renode/p0_gui.resc); headless `LoggingUartAnalyzer` in [logs](../projects/p0_blinky/results/2026-10-10_renode_overlay/) |
+| Reading and annotating the platform `.repl` | P0 | [x] [stm32h743_annotated.repl](../projects/p0_blinky/renode/stm32h743_annotated.repl) |
 | `logLevel`, `LogPeripheralAccess` | P0–P1 | [ ] |
-| Overlay `.repl` fixing an unmodeled register | P0 | [ ] |
+| Overlay `.repl` fixing an unmodeled register | P0 | [x] [p0_overlay.repl](../projects/p0_blinky/renode/p0_overlay.repl) (DBGMCU_IDC, Python peripheral) |
 | Socket terminal (`CreateServerSocketTerminal`) and an external bridge | P1 | [ ] |
 | Snapshots `Save`/`Load` | P2 | [ ] |
 | Custom C# peripheral | P3 | [ ] |
@@ -27,9 +27,9 @@ Legend: `[ ]` planned · `[x]` demonstrated (with link)
 ## OpenModelica
 | Feature | Planned in | Status / evidence |
 |---|---|---|
-| OMEdit graphical model | P0 | [ ] |
-| Text equations model | P0 | [ ] |
-| `.mos` scripting (`loadModel`, `simulate`, `getErrorString`) | P0–P1 | [ ] |
+| OMEdit graphical model | P0 | [ ] component model with diagram annotations written as text ([RC_Graphical.mo](../projects/p0_blinky/model/RC_Graphical.mo)); not yet opened/drawn in OMEdit |
+| Text equations model | P0 | [x] [RC_Equations.mo](../projects/p0_blinky/model/RC_Equations.mo) |
+| `.mos` scripting (`loadModel`, `simulate`, `getErrorString`) | P0–P1 | [x] [p0.mos](../projects/p0_blinky/scripts/p0.mos) |
 | Solver and tolerance study | P1 | [ ] |
 | FMU export (CS, CVODE) and validation | P1 | [ ] |
 | `linearize()` | P2 | [ ] |
@@ -45,12 +45,12 @@ Legend: `[ ]` planned · `[x]` demonstrated (with link)
 ## Robot Framework
 | Feature | Planned in | Status / evidence |
 |---|---|---|
-| Renode keywords (`Create Terminal Tester`, `Wait For Line On Uart`) | P0 | [ ] |
-| Reading `log.html` / `report.html` | P0 | [ ] |
+| Renode keywords (`Create Terminal Tester`, `Wait For Line On Uart`) | P0 | [x] [renode.resource](../tests/common/renode.resource), [p0_blinky.robot](../projects/p0_blinky/robot/p0_blinky.robot) |
+| Reading `log.html` / `report.html` | P0 | [x] [archived run](../projects/p0_blinky/results/2026-10-10_renode_robot/) |
 | Suite Setup/Teardown with processes | P1 | [ ] |
 | Variables and `${TARGET}` switching | P1 | [ ] |
 | `Test Template` (data-driven) | P2 | [ ] |
-| Tags (`smoke`/`long`/`hw`) | P2 | [ ] |
+| Tags (`smoke`/`long`/`hw`) | P2 | [x] `smoke` used early in P0 ([p0_blinky.robot](../projects/p0_blinky/robot/p0_blinky.robot)); `long`/`hw` still planned |
 | Custom Python keyword library | P3 | [ ] |
 | Sweeps and a result-aggregating listener | P4 | [ ] |
 | Requirement tags and a traceability report | P5 | [ ] |
