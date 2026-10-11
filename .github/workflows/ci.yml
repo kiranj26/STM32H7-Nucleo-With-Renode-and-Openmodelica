@@ -1,0 +1,73 @@
+# CI: the same devcontainer image as local work (ADR-0002), and only `make` targets
+# (.claude/rules/ci-devenv.md). GitHub runners are x86_64, so no Rosetta here.
+name: ci
+
+on:
+  push:
+    branches: [main, "p[0-9]/**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  p0:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      RUN: docker run --rm -v ${{ github.workspace }}:/work -w /work h7lab:ci
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Layer cache in the GitHub Actions cache: unchanged layers (OMC, Renode, toolchain)
+      # are reused, so only edited layers rebuild.
+      - name: Build devcontainer image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: .devcontainer/Dockerfile
+          platforms: linux/amd64
+          tags: h7lab:ci
+          load: true
+          cache-from: type=gha,scope=h7lab
+          cache-to: type=gha,mode=max,scope=h7lab
+
+      - name: make doctor
+        run: $RUN make doctor
+
+      # Stage 1: lint (`make unit` joins in P1, when fw/common/ctrl and tools/labkit exist)
+      - name: make lint
+        run: $RUN make lint
+
+      # Stage 2: firmware (canonical ELF)
+      - name: make fw P=p0
+        run: $RUN make fw P=p0
+
+      # Stage 3: models (`make fmu` joins in P1, the first plant FMU)
+      - name: make sim P=p0
+        run: $RUN make sim P=p0
+
+      # Stage 4: Robot smoke suite on Renode
+      - name: make test P=p0 TAGS=smoke
+        run: $RUN make test P=p0 TAGS=smoke
+
+      # Stage 5: evidence
+      - name: Upload reports and plots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-evidence
+          path: |
+            build/robot/p0/*.html
+            build/robot/p0/robot_output.xml
+            build/sim/p0/rc_compare.png
+            build/sim/p0/metrics.json
+            build/fw/p0_blinky/p0_blinky.elf
+          if-no-files-found: warn
