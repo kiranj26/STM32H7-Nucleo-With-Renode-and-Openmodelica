@@ -87,5 +87,5 @@ Note: the Makefile, devcontainer and `tests/common` exist since P0 (`make doctor
 
 ## Current status
 <!-- Updated by the close-project skill. -->
-- Active project: **P0: Toolchain warm-up**: all milestones done on `p0/scaffold` (PR #3); remaining: owner review, README §7, merge, `p0-done` tag
-- Completed: none
+- Active project: **P1: Thermal chamber** (not started; start with `/start-project 1 thermal`)
+- Completed: **P0: Toolchain warm-up** (2026-10-11, PRs #3 + #4, tag `p0-done`). Open follow-ups recorded in `projects/p0_blinky/README.md` §6: board HSE ~1.3 % fast, OMPython session hang (fix before P2), DWT clock in Renode (fix before P3).

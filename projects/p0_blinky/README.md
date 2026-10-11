@@ -1,6 +1,6 @@
 # P0: Toolchain warm-up (Blinky)
 
-> Status: 🚧 ready for review (all "done when" items met; PR #3 merge and `p0-done` tag pending) · Time spent: ~__ h
+> Status: ✅ complete 2026-10-11: all "done when" items met, CI green, evidence in `results/` (PR #3 + follow-up PR merged; tag `p0-done`). Open items for later are listed in §6 and marked _open_. · Time spent: ~__ h
 
 ## 1. Goal
 Get every tool producing output **independently** before connecting anything. CubeMX generates a CMake project for the NUCLEO-H743ZI2 that blinks LD1 (PB0) and prints `Hello <n>` on USART3 (ST-LINK VCP, 115200 baud). The **same ELF** (built in the devcontainer) boots in Renode, where a Robot suite checks it, and runs on the real board. Separately, OpenModelica simulates an RC circuit twice, from library components and as a hand-written ODE, and compares both with the analytic answer. There's no closed loop yet; the point is to know what each tool does on its own, and where the Renode H743 platform model stops matching the silicon.
@@ -11,7 +11,7 @@ Get every tool producing output **independently** before connecting anything. Cu
 | SYSCLK / timer clock | 400 MHz / 200 MHz (HCLK 200, APB1–4 100; see [`fw/p0_blinky/CUBEMX.md`](../../fw/p0_blinky/CUBEMX.md)) |
 | Clock source / power | HSE bypass 8 MHz (ST-LINK MCO) → PLL1 M=1 N=100 P=2 (VCO 800 MHz, wide); LDO supply, VOS1; flash 2 WS; rev V |
 | CubeMX / HAL | STM32CubeMX 6.18, STM32Cube FW_H7 V1.13.0, CMake + GCC |
-| Toolchain / image | devcontainer `linux/amd64`: Arm GNU 15.3.rel2 (build arm-15.180), OpenModelica 1.27.1 + MSL 4.0.0, Renode 1.17.0, Robot 6.1, Python 3.11 ([pins](../../docs/dev-environment.md)) |
+| Toolchain / image | devcontainer `linux/amd64`: Arm GNU 15.3.rel2 (build arm-15.180), OpenModelica 1.27.1 + MSL 4.0.0 (exact pin, verified by `make doctor`), Renode 1.17.0, Robot 6.1, Python 3.11 ([pins](../../docs/dev-environment.md)) |
 | Firmware (Debug, canonical) | text 23 848 B, data 96 B, bss 2 056 B (flash 1.14 %, DTCM 1.64 %); `.bin` sha256 `50ac07ca…` |
 | Control Ts | N/A in P0 (no control loop) |
 | Console | USART3 (PD8/PD9) → ST-LINK VCP / Renode `sysbus.usart3` |
@@ -68,7 +68,7 @@ The repo is **bind-mounted** at `/work`: files written in the container (e.g. `b
 ### 4.2 The `make` targets
 | Run where | Command | Expect |
 |---|---|---|
-| container | `make doctor` | 12 lines, no `MISSING`: `arm-none-eabi-gcc … 15.3.Rel1 (Build arm-15.180)`, `cmake version 4.4.4`, `OpenModelica 1.27.1`, `Renode v1.17.0`, `Robot Framework 6.1`, `Python 3.11.16`, `FMPy 0.3.32`, `OMPython 4.1.0`, `MSL … loads` (note: the library actually loaded is 4.1.0, see §6) |
+| container | `make doctor` | 12 lines, no `MISSING`: `arm-none-eabi-gcc … 15.3.Rel1 (Build arm-15.180)`, `cmake version 4.4.4`, `OpenModelica 1.27.1`, `Renode v1.17.0`, `Robot Framework 6.1`, `Python 3.11.16`, `FMPy 0.3.32`, `OMPython 4.1.0`, `MSL  Modelica 4.0.0 (pinned 4.0.0)` (the version that actually loads, compared with the Dockerfile pin) |
 | container | `make lint` | `All checks passed!`, `… files already formatted`, and clang-format silent |
 | container | `make fw P=p0` | ends with `text 23848  data 96  bss 2056`; files `build/fw/p0_blinky/p0_blinky.{elf,bin,hex,map}`; `sha256sum build/fw/p0_blinky/p0_blinky.bin` → `50ac07ca…` |
 | container | `make sim P=p0` | prints a JSON with `"max_abs_graphical_minus_equations_V": 0.0`, `"max_abs_equations_minus_analytic_V": 3.8e-06`; plot at `build/sim/p0/rc_compare.png` |
@@ -125,8 +125,8 @@ Every number links to a dated run folder. Levels: **HW** = the physical board, *
 | Emulated chip identity | DBGMCU_IDC = 0x20030450, rev V (REQ-P0-03) | ✅ ([run](results/2026-10-10_renode_robot/), [before/after logs](results/2026-10-10_renode_overlay/)) | rev V per CubeMX |
 | LD1 (PB0) toggles between `Hello` lines | GPIOB ODR bit 0 differs (REQ-P0-05) | ✅ `0x0` → `0x1` ([run](results/2026-10-11_renode_robot/), 5/5 tests) | ✅ LD1 seen blinking |
 | `Hello` period | 501 ± 1 ms virtual (REQ-P0-04) | ✅ 500.999 ms ([run](results/2026-10-10_renode_robot/)) | ⚠️ 495.1 / 495.3 ms (two ELFs, n = 39 each): −1.31 % vs. 501.9 ms expected incl. UART TX ([analysis](results/2026-10-10_timing_comparison/)) |
-| RC: graphical vs. equations, max \|Δv\| | ≈ 0 | **MIL:** 0.0 V exactly ([run](results/2026-10-10_mil_rc/)) | N/A |
-| RC: equations vs. analytic, max \|Δv\| | ≤ rtol × 3.3 V ≈ 3.3 µV order | **MIL:** 3.8 µV; v(τ) = 2.085997 V vs. 2.085998 V expected ([run](results/2026-10-10_mil_rc/)) | N/A |
+| RC: graphical vs. equations, max \|Δv\| | ≈ 0 | **MIL:** 0.0 V exactly ([run, MSL 4.0.0](results/2026-10-11_mil_rc_msl400/); identical in the [first run](results/2026-10-10_mil_rc/), which used 4.1.0, see §6) | N/A |
+| RC: equations vs. analytic, max \|Δv\| | ≤ rtol × 3.3 V ≈ 3.3 µV order | **MIL:** 3.8 µV; v(τ) = 2.085997 V vs. 2.085998 V expected ([run, MSL 4.0.0](results/2026-10-11_mil_rc_msl400/)) | N/A |
 
 ![RC circuit, MIL](results/2026-10-10_mil_rc/rc_compare.png)
 
@@ -150,7 +150,7 @@ Every number links to a dated run folder. Levels: **HW** = the physical board, *
 - **The PR first claimed Renode's timers stay at 250 MHz; my own M7 lab measured 200 MHz** (TIM2 counted 200 000 in 1 ms virtual after boot). Claude's original check had run on an empty machine (no firmware, so RCC never configured → the `.repl`'s 250 MHz start value). Re-measured all four cases: timers ARE re-timed by the RCC model (200 MHz = CubeMX, fine for P1); **DWT is not** (stays 250 MHz vs. 400 MHz CPU, so P3 cycle counts would be 1.6× off) ([script](scripts/renode_clock_check.sh), [run](results/2026-10-11_renode_clock_check/)). *Lesson:* measure an emulator in the real configuration; re-run a check before trusting it when its conditions differ from the claim.
 - **Board `Hello` period is 495.1 ms, not ~501.9 ms (HW)**: expected 501 ticks (`HAL_Delay` adds one tick) + ~0.9 ms TX. Short means the CPU runs *faster* than HAL assumes, which points at an HSE input of ≈ 8.1 MHz from the ST-LINK MCO instead of exactly 8 MHz. Reproduced with the canonical ELF (495.3 ms); Renode gives 500.999 ms with the same binary, so it follows the board's clock, not the code ([analysis](results/2026-10-10_timing_comparison/)). Cause _open_, not yet tested (MCO1 on PA8 with a scope, or an HSI A/B test). *Lesson:* the MCU can't detect its own clock error; only an external reference shows it. I first guessed "lower than 8 MHz", which has the direction backwards.
 
-- **The image says MSL 4.0.0 but loads 4.1.0** (found in the M9 lab): a no-ground error showed the path `Modelica 4.1.0+maint.om`, and `getVersion(Modelica)` returns `"4.1.0"` although `loadModel(Modelica, {"4.0.0"})` returns `true`. Cause: `installPackage(Modelica, "4.0.0")` without exact matching installed the newest compatible release, and OpenModelica treats 4.1.0 as satisfying a 4.0.0 request; `make doctor` only checks "loads". No P0 result depends on it (the RC uses basic components), but the pin isn't real. _Open: pin exactly, or document 4.1.0._ *Lesson:* a version check must compare the version, not just "it loads".
+- **The image said MSL 4.0.0 but loaded 4.1.0** (found in the M9 lab): a no-ground error showed the path `Modelica 4.1.0+maint.om`, and `getVersion(Modelica)` returned `"4.1.0"` although `loadModel(Modelica, {"4.0.0"})` returned `true`. Cause: `installPackage(Modelica, "4.0.0")` without exact matching installed the newest compatible release, OpenModelica accepts 4.1.0 for a 4.0.0 request, and `make doctor` only checked "loads" → **fixed:** the Dockerfile installs `4.0.0+maint.om` with `exactMatch=true` and fails the build unless `getVersion` is exactly 4.0.0; `make doctor` reads the pin from the Dockerfile and compares versions (it reported `MISMATCH: loaded '4.1.0', pinned '4.0.0'` on the old image). Re-run with 4.0.0 gives identical numbers ([run](results/2026-10-11_mil_rc_msl400/)); the [2026-10-10 run](results/2026-10-10_mil_rc/)'s `meta.json` says 4.0.0 but was 4.1.0 (committed evidence is not edited). *Lesson:* a version check must compare the version, not just "it loads".
 - **OMPython session hangs in the devcontainer** (found in the M9 lab): `OMCSessionLocal()` never returned within 90 s (the older `OMCSessionZMQ` also stalled). Not needed in P0 (we drive `omc` with `.mos` scripts), but P2 plans OMPython parameter sweeps. _Open: debug before P2._
 
 ## 7. What I'd do differently

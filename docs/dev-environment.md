@@ -37,7 +37,7 @@ Fill this table when the Dockerfile is written; update it on every upgrade, with
 |---|---|---|---|
 | Ubuntu base | 22.04 (`@sha256:5ec03bb3…`) | Docker Hub `ubuntu`, linux/amd64 | 2026-10-10 |
 | OpenModelica | 1.27.1 (`omc`, no GUI) | build.openmodelica.org versioned apt repo (`releases/1.27.1 jammy release`) | 2026-10-10 |
-| Modelica Standard Library | 4.0.0 | OMC `installPackage` at image build | 2026-10-10 |
+| Modelica Standard Library | 4.0.0 (`4.0.0+maint.om`, with ModelicaServices/Complex 4.0.0) | OMC `installPackage(..., exactMatch=true)` at image build; build fails unless `getVersion` = 4.0.0; `make doctor` compares too | 2026-10-11 (was silently 4.1.0 before) |
 | Renode | 1.17.0 linux-portable (sha256 checked) | github.com/renode/renode releases | 2026-10-10 |
 | Arm GNU Toolchain | 15.3.rel2 = build arm-15.180, same as host (sha256 checked) | gitlab.arm.com generic packages | 2026-10-10 |
 | Python | 3.11.16, uv 0.12.20 managed, venv `/opt/venv` | `ghcr.io/astral-sh/uv` | 2026-10-10 |

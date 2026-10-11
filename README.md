@@ -8,7 +8,8 @@
   <img alt="Emulator" src="https://img.shields.io/badge/emulation-Renode-F97316">
   <img alt="Modeling" src="https://img.shields.io/badge/modeling-OpenModelica%20%2B%20FMI%202.0-3B82F6">
   <img alt="Tests" src="https://img.shields.io/badge/tests-Robot%20Framework-22C55E?logo=robotframework&logoColor=white">
-  <img alt="Status" src="https://img.shields.io/badge/status-P0%20up%20next-lightgrey">
+  <img alt="Status" src="https://img.shields.io/badge/status-P0%20done%20%C2%B7%20P1%20next-brightgreen">
+  <a href="https://github.com/kiranj26/STM32H7-Nucleo-With-Renode-and-Openmodelica/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/kiranj26/STM32H7-Nucleo-With-Renode-and-Openmodelica/actions/workflows/ci.yml/badge.svg"></a>
 </p>
 
 <p align="center">
@@ -39,7 +40,7 @@ Most embedded control projects stop at "it works on my board". This repo goes fu
 - ✅ **Verify like a product team.** Tests are named after requirements, tagged smoke, long, and hardware, traced to requirement IDs, and run in CI.
 - 📈 **Use control theory, not trial and error.** Gains come from scripts that use the model's linearization: PID, gain scheduling, cascaded loops, LQR, Kalman filter, and EKF.
 
-> **Status:** planning is complete and P0 (toolchain warm-up) is up next. Results, plots, and reports will appear here as each project is finished and tagged `pN-done`.
+> **Status (2026-10-11):** **P0 (toolchain warm-up) is complete.** One firmware binary (`sha256 50ac07ca…`), built in a pinned devcontainer, runs on the Nucleo-H743ZI2 and in Renode with 5/5 Robot tests green in CI; OpenModelica reproduces an RC circuit within 3.8 µV of the exact solution. Results, findings and how to reproduce them: **[projects/p0_blinky](projects/p0_blinky/README.md)**. **P1 (thermal chamber, first closed loop) is next.**
 
 ---
 
@@ -71,8 +72,8 @@ The time model evolves on purpose. In **P1–P3** the firmware drives stepping, 
 
 | | Project | Plant | Control concept | Key tool features | Status |
 |---|---|---|---|---|---|
-| **P0** | Toolchain warm-up | RC circuit | (none) | `.resc`/`.repl`, OMEdit vs. equations, first Robot test | ⏳ next |
-| **P1** | Thermal chamber | Heater + thermal mass + NTC | Discrete PID, anti-windup, D-filter | `.mos` scripting, FMU export, socket bridge, Suite Setup | ⬜ |
+| **P0** | Toolchain warm-up | RC circuit | (none) | `.resc`/`.repl` + overlay, Modelica components vs. equations, first Robot tests, devcontainer + CI | ✅ [done](projects/p0_blinky/README.md) |
+| **P1** | Thermal chamber | Heater + thermal mass + NTC | Discrete PID, anti-windup, D-filter | `.mos` scripting, FMU export, socket bridge, Suite Setup | ⏳ next |
 | **P2** | Coupled water tanks | Torricelli outflow, pump, valve | Gain scheduling + feedforward | `linearize()`, OMPython sweeps, Renode snapshots, test templates | ⬜ |
 | **P3** | DC motor servo | Electrical + rotational + friction | Cascaded current/speed/position loops | Custom C# peripherals, GDB, CPU hooks, transformational debugger | ⬜ |
 | **P4** | Inverted pendulum | MultiBody cart-pole | LQR + Kalman filter | Lockstep virtual-time co-sim, profiler, robustness sweeps | ⬜ |
@@ -88,10 +89,12 @@ Full detail, including milestones, done-when criteria, and risks: **[docs/ROADMA
 <details>
 <summary><b>P0: Toolchain warm-up</b>: every tool producing output on its own</summary>
 
-- CubeMX project from the NUCLEO-H743ZI2 board preset, generated as CMake: blinky plus `Hello` on the ST-LINK VCP (USART3).
-- Boot the ELF in Renode from a hand-written `.resc`. Read and annotate the H743 `.repl` platform to learn how Renode describes memory, peripherals, and interrupts.
-- The same RC circuit built twice in OpenModelica, graphically and as text equations, then compared.
-- A first Robot test that boots the firmware and waits for `Hello` on the UART.
+- CubeMX project from the NUCLEO-H743ZI2 board preset (HSE bypass → PLL1 → 400 MHz), generated as CMake: blinky plus `Hello` on the ST-LINK VCP (USART3).
+- A pinned `linux/amd64` devcontainer and a Makefile (`doctor`, `lint`, `fw`, `sim`, `test`, `hw`); the container-built ELF is the one canonical binary, flashed from the Mac via the bind mount.
+- The ELF boots in Renode from a hand-written `.resc` plus an overlay (DBGMCU reports silicon rev V, so the emulated boot takes the same path as the board); the H743 platform is annotated line by line, including which clocks Renode re-times (SysTick, timers) and which it doesn't (DWT).
+- The same RC circuit in OpenModelica from library components and as a hand-written ODE: identical to 0.0 V, and within 3.8 µV of the analytic solution.
+- 5 requirement-style Robot tests in virtual time (boot, Hello counter, chip identity, 501 ms period, LD1 toggling), 4 of them `smoke`, in CI on every push.
+- Findings with evidence: the board's clock runs ~1.3 % fast (open), Mac vs. container binaries differ only in C-library layout, and the predicted Renode boot hang didn't happen.
 </details>
 
 <details>
@@ -155,7 +158,7 @@ Full detail, including milestones, done-when criteria, and risks: **[docs/ROADMA
 | Hardware | STM32 Nucleo-H743ZI2 (STM32H743ZI, Cortex-M7 @ 480 MHz, FPU, D-cache) |
 | Firmware | STM32CubeMX 6.x, STM32Cube HAL/LL, CMake + Ninja, Arm GNU Toolchain |
 | Emulation | Renode (STM32H743 platform + project overlays, custom C# peripherals) |
-| Modeling | OpenModelica (OMC, OMEdit, OMPython), Modelica Standard Library 4.x, FMI 2.0 |
+| Modeling | OpenModelica 1.27.1 (OMC, OMEdit, OMPython), Modelica Standard Library 4.0.0 (exact pin), FMI 2.0 |
 | Co-simulation | Python 3.11, FMPy, the `labkit` bridge and orchestrator |
 | Testing | Robot Framework + Renode keywords, pytest, host unit tests for C |
 | Control design | python-control, NumPy, SciPy |
@@ -165,19 +168,23 @@ Full detail, including milestones, done-when criteria, and risks: **[docs/ROADMA
 
 ## 🚀 Getting started
 
-> The build system and devcontainer are created in **P0**, so the commands below are the target workflow and don't work yet. Until then, start from [docs/dev-environment.md](docs/dev-environment.md).
+> **Works today (P0):** `make doctor`, `lint`, `fw`, `sim`, `test` (devcontainer) and `make hw` (macOS host). `make fmu` and `make unit` arrive in P1. Every command with its expected output: **[P0 README §4](projects/p0_blinky/README.md#4-how-to-run-and-what-to-expect)**.
 
 **Host (macOS):** STM32CubeMX with the STM32CubeH7 pack, `stlink`, `pyserial`, and OrbStack or Colima. **Everything else** runs in the devcontainer.
 
 ```sh
+# once, on the Mac (repo root): build the devcontainer image, then open a shell in it
+docker build --platform linux/amd64 -f .devcontainer/Dockerfile -t h7lab:dev .
+docker run --rm -it --platform linux/amd64 -v "$PWD":/work -w /work h7lab:dev
+
 # inside the devcontainer
-make doctor                          # check tool versions
-make fw   P=p1                       # build firmware (CubeMX CMake project)
-make fmu  P=p1                       # export + validate the plant FMU
-make test P=p1 TAGS=smoke            # Robot suite against Renode
+make doctor                          # every tool version, incl. the exact Modelica library pin
+make fw   P=p0                       # build the canonical firmware -> build/fw/p0_blinky/
+make sim  P=p0                       # OpenModelica RC study -> build/sim/p0/rc_compare.png
+make test P=p0 TAGS=smoke            # Robot suite against Renode -> build/robot/p0/log.html
 
 # on the macOS host, board connected
-make hw   P=p1                       # flash and run the same suite on silicon
+make hw   P=p0 HW_DESC=my_run        # flash the container-built binary + capture UART evidence
 ```
 
 ---
@@ -186,12 +193,13 @@ make hw   P=p1                       # flash and run the same suite on silicon
 
 ```
 fw/
-  common/ctrl/        HAL-free control algorithms (build for arm + host)
-  common/bsp/         thin HAL helpers
-  common/link/        COBS + CRC16 protocol (C side)
+  common/ctrl/        HAL-free control algorithms (build for arm + host)   [from P1]
+  common/bsp/         thin HAL helpers                                     [from P1]
+  common/link/        COBS + CRC16 protocol (C side)                      [from P1]
   pN_<name>/          CubeMX project per project (.ioc + generated code + app/)
-models/Lab/           shared Modelica package
-tools/labkit/         Python: FMU, Renode control, bridge, metrics, run logging, plots
+models/Lab/           shared Modelica package                              [from P1]
+tools/labkit/         Python: FMU, Renode control, bridge, metrics, run logging, plots  [from P1]
+tools/doctor.sh       tool-version check behind `make doctor`
 tests/common/         shared Robot resources and keyword libraries
 projects/pN_<name>/   model/ scripts/ renode/ robot/ results/ + README ("What I learned")
 docs/                 roadmap, ADRs, environment, troubleshooting, glossary, notes
