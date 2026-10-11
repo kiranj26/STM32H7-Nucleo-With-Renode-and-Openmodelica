@@ -45,14 +45,16 @@
 //    Not present at all: DBGMCU (0x5C001000) -> fixed in p0_overlay.repl because its
 //      absence made SystemInit take the silicon rev-Y errata path.
 //
-// 4. CLOCK RATES THAT ARE FIXED IN THE PLATFORM (vs. our CubeMX tree)
-//    peripheral          platform frequency   our configuration      impact
-//    SysTick (nvic)      480 MHz (initial)    400 MHz CPU            none: RCC model re-times it
-//    TIM1-17             250 MHz              200 MHz timer clock    P1 control tick: PSC/ARR
-//                                                                    math would run 25 % fast
-//                                                                    unless the overlay sets 200 MHz
-//                                                                    (verify in P1)
-//    DWT (CYCCNT)        250 MHz              400 MHz CPU            P3 ISR-load measurement off
+// 4. CLOCK RATES IN THE PLATFORM vs. our CubeMX tree - MEASURED 2026-10-11
+//    (scripts/renode_clock_check.sh, results/2026-10-11_renode_clock_check)
+//    peripheral          .repl value          after our firmware boots   board
+//    SysTick (nvic)      480 MHz (start)      400 MHz (re-timed by RCC)  400 MHz
+//    TIM1-17             250 MHz (start)      200 MHz (re-timed by RCC)  200 MHz  -> OK for P1
+//    DWT (CYCCNT)        250 MHz              250 MHz (NOT re-timed)     400 MHz  -> P3 cycle
+//                                                                                  counts 1.6x off
+//    Correction: an earlier version of this table said timers stay at 250 MHz. That was
+//    measured on an EMPTY machine (no firmware -> RCC never configured). The owner's M7 lab
+//    measured TIM2 = 200 MHz with the firmware booted. Lesson: measure in the real config.
 //    USART1/6 | 2/3/...  200 | 125 MHz        100 MHz (PCLK1)        none for byte I/O (no baud timing)
 //    LPTIM1-5            32 MHz               not used
 //
@@ -83,7 +85,7 @@ nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     priorityMask: 0xF0
     -> cpu@0
 
-// P0: DWT cycle counter at a FIXED 250 MHz - not our 400 MHz CPU clock (P3 ISR timing).
+// P0: DWT cycle counter stays at 250 MHz even after our firmware sets 400 MHz (measured) - P3 ISR timing would be 1.6x off.
 dwt: Miscellaneous.DWT @ sysbus 0xE0001000
     frequency: 250000000
 
@@ -532,7 +534,7 @@ timer3: Timers.STM32_Timer @ {
     frequency: 250000000
     -> nvic@29
 
-// P0: all STM32_Timer instances run at a fixed 250 MHz here; our CubeMX timer clock is 200 MHz (relevant from P1).
+// P0: 250 MHz is only the start value: once our firmware configures RCC, TIM2 counts at 200 MHz = our CubeMX timer clock (measured).
 timer2: Timers.STM32_Timer @ {
         sysbus 0x40000000;
         rcc RegistrationPeripheralAlias.TIM2
