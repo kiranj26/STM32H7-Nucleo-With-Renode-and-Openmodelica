@@ -75,8 +75,12 @@ test: ## Robot suite for P on Renode -> build/robot/pN/ (container; TAGS=smoke t
 	cd $(ROBOT_OUT) && renode-test $(CURDIR)/projects/$(NAME)/robot/*.robot \
 	    $(if $(TAGS),--include $(TAGS)) --variable TARGET:$(TARGET)
 
-sim: ## Run the project's .mos script (P0 step G) - not written yet
-	@echo "make sim: not written yet (P0 step G: RC models)"; exit 2
+sim: ## Simulate the project's models (.mos) and post-process -> build/sim/pN/ (container)
+	@test -n "$${IN_DEVCONTAINER:-}" || { echo "error: make sim runs in the devcontainer (OpenModelica lives there)"; exit 2; }
+	$(require_project)
+	omc projects/$(NAME)/scripts/$(P).mos | tee build/sim-$(P).log
+	@! grep -q '"Error\|\[.*Error' build/sim-$(P).log || { echo "error: omc reported errors (see build/sim-$(P).log)"; exit 1; }
+	python projects/$(NAME)/scripts/rc_compare.py build/sim/$(P)
 
 fmu: ## Export and validate the plant FMU (P1+)
 	@echo "make fmu: no plant FMU before P1"; exit 2
@@ -84,8 +88,11 @@ fmu: ## Export and validate the plant FMU (P1+)
 unit: ## Host unit tests for fw/common/ctrl and tools/labkit (P1+)
 	@echo "make unit: nothing to test before P1 (fw/common/ctrl, tools/labkit don't exist yet)"; exit 2
 
-lint: ## ruff + clang-format check (once there is code to lint)
-	@echo "make lint: not wired yet (no Python code, no .clang-format yet)"; exit 2
+lint: ## ruff (Python) + clang-format (our C only, never CubeMX/HAL code) - check, don't modify (container)
+	@test -n "$${IN_DEVCONTAINER:-}" || { echo "error: make lint runs in the devcontainer (pinned ruff/clang-format)"; exit 2; }
+	ruff check projects tools
+	ruff format --check projects tools
+	clang-format --dry-run --Werror $(wildcard fw/*/app/*.[ch] fw/common/*/*.[ch])
 
 clean: ## Remove build/
 	rm -rf build

@@ -1,0 +1,11 @@
+{
+  "project": "p0_blinky",
+  "level": "MIL",
+  "date": "2026-10-10",
+  "command": "make sim P=p0 (devcontainer h7lab:dev)",
+  "models": ["projects/p0_blinky/model/RC_Graphical.mo", "projects/p0_blinky/model/RC_Equations.mo"],
+  "openmodelica": "1.27.1", "msl": "4.0.0",
+  "solver": "dassl", "tolerance": 1e-6, "stop_time_s": 0.005, "intervals": 500,
+  "equations": {"RC_Graphical": "24 (16 trivial)", "RC_Equations": 2},
+  "git_commit": "1e24cde-dirty (models and scripts uncommitted at run time)"
+}

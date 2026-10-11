@@ -1,17 +1,27 @@
-// P0 Blinky: simulate the RC circuit twice (graphical vs. text equations) and compare.
-// Run from repo root:  omc projects/p0_blinky/scripts/p0.mos
+// P0 Blinky - milestone 6: simulate the RC circuit twice (MSL components vs. a hand-written
+// ODE) so scripts/rc_compare.py can compare them with each other and with the analytic answer.
+// Run from the repo root inside the devcontainer:  make sim P=p0   (or: omc projects/p0_blinky/scripts/p0.mos)
 // Every call is followed by getErrorString() so failures are visible in the log.
-// P0 has no plant FMU; FMU export starts in P1 (see docs/ROADMAP.md).
+// P0 has no plant FMU; FMU export starts in P1 (docs/ROADMAP.md).
 
 loadModel(Modelica, {"4.0.0"}); getErrorString();
-// loadFile("projects/p0_blinky/model/RC_Graphical.mo"); getErrorString();
-// loadFile("projects/p0_blinky/model/RC_Equations.mo"); getErrorString();
+loadFile("projects/p0_blinky/model/RC_Graphical.mo"); getErrorString();
+loadFile("projects/p0_blinky/model/RC_Equations.mo"); getErrorString();
 
-// --- Simulation (state solver + tolerance explicitly) ---
-// simulate(RC_Graphical, stopTime=..., tolerance=1e-6, method="dassl",
-//          outputFormat="csv", fileNamePrefix="rc_graphical"); getErrorString();
-// simulate(RC_Equations, stopTime=..., tolerance=1e-6, method="dassl",
-//          outputFormat="csv", fileNamePrefix="rc_equations"); getErrorString();
+// Outputs go to build/ (gitignored); results/ gets a curated copy.
+system("mkdir -p build/sim/p0"); getErrorString();
+cd("build/sim/p0"); getErrorString();
 
-// --- Compare: max |v_graphical - v_equations| and a difference plot ---
-// (milestone 6: rc.mos; decide whether this file becomes rc.mos or calls it)
+// Same solver, tolerance and output grid for both models, stated explicitly:
+// DASSL (variable step, variable order) with rtol 1e-6; 500 output intervals of 10 us
+// over 5 tau = 5 ms. Identical settings make a point-by-point comparison valid.
+simulate(RC_Graphical, startTime = 0, stopTime = 0.005, numberOfIntervals = 500,
+         tolerance = 1e-6, method = "dassl", outputFormat = "csv",
+         fileNamePrefix = "rc_graphical"); getErrorString();
+simulate(RC_Equations, startTime = 0, stopTime = 0.005, numberOfIntervals = 500,
+         tolerance = 1e-6, method = "dassl", outputFormat = "csv",
+         fileNamePrefix = "rc_equations"); getErrorString();
+
+// How many equations/variables did each formulation produce? (printed for the README)
+checkModel(RC_Graphical); getErrorString();
+checkModel(RC_Equations); getErrorString();

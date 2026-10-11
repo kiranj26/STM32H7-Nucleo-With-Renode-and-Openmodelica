@@ -1,0 +1,13 @@
+{
+  "expected_ms": 501.0,
+  "renode_ms": 500.9989975,
+  "hw_mac_elf_mean_ms": 495.12820366101386,
+  "hw_container_elf_mean_ms": 495.307690057999,
+  "hw_vs_renode_pct": -1.1359917824987131,
+  "hw_expected_with_tx_ms": 501.9,
+  "hw_vs_hw_expected_pct": -1.313470799362615,
+  "n_intervals": [
+    39,
+    39
+  ]
+}

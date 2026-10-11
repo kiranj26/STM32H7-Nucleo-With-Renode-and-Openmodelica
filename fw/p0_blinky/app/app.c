@@ -12,7 +12,7 @@
  * From P1 on, the control step moves to a timer ISR and this pattern is banned there.
  */
 
-#define BLINK_PERIOD_MS 500u
+#define BLINK_PERIOD_MS    500u
 #define UART_TX_TIMEOUT_MS 100u
 
 static uint32_t hello_count;
