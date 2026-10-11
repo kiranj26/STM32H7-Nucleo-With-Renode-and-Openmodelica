@@ -46,18 +46,75 @@ Get every tool producing output **independently** before connecting anything. Cu
 | CI | GitHub Actions: same Dockerfile (buildx + GHA cache), only `make` targets, evidence artifact | [ci.yml](../../.github/workflows/ci.yml) |
 | Control | (none in P0) | |
 
-## 4. How to run
-```sh
-make doctor                            # devcontainer: every tool version, MSL 4.0.0 loads
-make lint                              # devcontainer: ruff + clang-format (our C only)
-make fw   P=p0                         # devcontainer only -> build/fw/p0_blinky/ (canonical ELF)
-make sim  P=p0                         # devcontainer: RC models -> build/sim/p0/rc_compare.png
-make test P=p0 [TAGS=smoke]            # devcontainer: Robot on Renode -> build/robot/p0/log.html
-make hw   P=p0 HW_DESC=<desc>          # macOS host, board attached: flash + 20 s capture + meta.json
-```
-**CI:** [run 38097537787](https://github.com/kiranj26/STM32H7-Nucleo-With-Renode-and-Openmodelica/actions/runs/38097537787) green on 2026-10-11 (image build 3 min 52 s cold; doctor/lint/fw/sim 14 s; smoke suite 9 s); artifact `p0-evidence`.
+## 4. How to run (and what to expect)
+Everything below was run on 2026-10-11 with the pinned image; the "Expect" lines are real outputs. Two places run commands:
+- **devcontainer**: all build, simulation and test tools (`make doctor/lint/fw/sim/test`, `omc`, `renode`).
+- **macOS host**: only what needs USB (`make hw`, `st-flash`, the serial port).
 
-From a Mac terminal without VS Code: `docker run --rm --platform linux/amd64 -v "$PWD":/work -w /work h7lab:dev make <target> P=p0`.
+### 4.1 One-time setup
+```sh
+# macOS host: Docker (OrbStack) + board tools
+docker --version                                   # any recent Docker; OrbStack recommended (ADR-0002)
+brew install stlink                                # st-flash for `make hw`
+
+# build the devcontainer image (from the repo root): ~4 min the first time, seconds when cached
+docker build --platform linux/amd64 -f .devcontainer/Dockerfile -t h7lab:dev .
+
+# open a shell inside it (or VS Code: "Dev Containers: Reopen in Container")
+docker run --rm -it --platform linux/amd64 -v "$PWD":/work -w /work h7lab:dev
+```
+The repo is **bind-mounted** at `/work`: files written in the container (e.g. `build/`) appear on the Mac immediately, which is how `make hw` on the Mac flashes the container-built ELF.
+
+### 4.2 The `make` targets
+| Run where | Command | Expect |
+|---|---|---|
+| container | `make doctor` | 12 lines, no `MISSING`: `arm-none-eabi-gcc … 15.3.Rel1 (Build arm-15.180)`, `cmake version 4.4.4`, `OpenModelica 1.27.1`, `Renode v1.17.0`, `Robot Framework 6.1`, `Python 3.11.16`, `FMPy 0.3.32`, `OMPython 4.1.0`, `MSL … loads` (note: the library actually loaded is 4.1.0, see §6) |
+| container | `make lint` | `All checks passed!`, `… files already formatted`, and clang-format silent |
+| container | `make fw P=p0` | ends with `text 23848  data 96  bss 2056`; files `build/fw/p0_blinky/p0_blinky.{elf,bin,hex,map}`; `sha256sum build/fw/p0_blinky/p0_blinky.bin` → `50ac07ca…` |
+| container | `make sim P=p0` | prints a JSON with `"max_abs_graphical_minus_equations_V": 0.0`, `"max_abs_equations_minus_analytic_V": 3.8e-06`; plot at `build/sim/p0/rc_compare.png` |
+| container | `make test P=p0` | 5 tests `status OK`, one line `period_ms=500.9989975 …`, `Tests finished successfully :)`; reports in `build/robot/p0/{log,report}.html` (~25 s) |
+| container | `make test P=p0 TAGS=smoke` | the 4 smoke tests only (the period test is excluded: slow, measures a property) |
+| **Mac** | `make hw P=p0 HW_DESC=my_run` | `Flash written and verified! jolly good!` then `hw: 41 Hello lines -> projects/p0_blinky/results/<date>_my_run/`; its `meta.json` shows `"bin_sha256": "50ac07ca…"` |
+| either | `make help` | the list of targets |
+
+Open the Robot report **on the Mac** (`open build/robot/p0/log.html`); `open` doesn't exist in the container.
+
+### 4.3 Exploring by hand
+**Renode monitor** (container): `renode --console --disable-gui --plain`, then type:
+```
+include @projects/p0_blinky/renode/p0.resc        # platform + overlay + ELF
+showAnalyzer sysbus.usart3 Antmicro.Renode.Analyzers.LoggingUartAnalyzer
+emulation RunFor "1.2"                            # expect "P0 blinky boot" at ~25 us virtual, Hello every 0.5 s
+cpu PC                                            # almost always inside HAL_GetTick (busy-wait in HAL_Delay)
+sysbus FindSymbolAt <pc>                          # -> HAL_GetTick
+sysbus ReadDoubleWord 0x5C001000                  # -> 0x20030450 (DBGMCU via the overlay = rev V)
+sysbus LogPeripheralAccess sysbus.gpioPortB true  # watch LD1: ODR read + BSRR write every 0.5 s
+quit
+```
+**Which clocks does Renode follow?** `bash projects/p0_blinky/scripts/renode_clock_check.sh` (container) → TIM2 `250000` counts/ms empty vs. `200000` booted; DWT `250000` both (see §6).
+
+**OpenModelica by hand** (container): write commands into a `.mos` file and run `omc file.mos`, e.g.
+```
+loadModel(Modelica, {"4.0.0"}); getErrorString();
+loadFile("projects/p0_blinky/model/RC_Equations.mo"); getErrorString();
+cd("build"); getErrorString();
+simulate(RC_Equations, stopTime=0.005, tolerance=1e-6, method="dassl", fileNamePrefix="rc"); getErrorString();
+val(v, 0.001, "rc_res.mat");     // -> 2.0859974  (63.2 % of 3.3 V at t = tau)
+```
+`getErrorString()` after every call prints errors/warnings (`""` = none); `simflags="-override R=2000"` in `simulate` changes a parameter for one run without editing the model.
+
+### 4.4 Common errors and what they mean
+| You see | Cause | Do |
+|---|---|---|
+| `error: make fw runs in the devcontainer` | ran on the Mac | run it in the container (the container ELF is canonical) |
+| `error: make hw runs on the macOS host` | ran in the container | run it on the Mac (no USB in Docker) |
+| `… already exists - results are never overwritten` | same `HW_DESC` + date | pick a new `HW_DESC` |
+| `zsh: resource busy: /dev/tty.usbmodem…` | another program holds the port (often a detached `screen`) | `lsof /dev/cu.usbmodem*`, then `screen -S <id> -X quit` |
+| `lstat .devcontainer: no such file or directory` | `docker build` run outside the repo root | `cd` to the repo root |
+| `File does not exist: …` in Renode | ELF not built, or `build/` was cleaned | `make fw P=p0` first |
+| `bash: open: command not found` | macOS command used in the container | run `open` on the Mac |
+
+**CI:** [run 38097537787](https://github.com/kiranj26/STM32H7-Nucleo-With-Renode-and-Openmodelica/actions/runs/38097537787) green on 2026-10-11 (image build 3 min 52 s cold, 49 s cached; doctor/lint/fw/sim 14 s; smoke suite 9 s); artifact `p0-evidence`.
 
 ## 5. Results
 Every number links to a dated run folder. Levels: **HW** = the physical board, **Renode** = emulation (virtual time), **MIL** = OpenModelica.
@@ -92,6 +149,9 @@ Every number links to a dated run folder. Levels: **HW** = the physical board, *
 - **`renode-test` ignored `-r`/`-o` and wrote `log.html`, `logs/`, `snapshots/` into the repo root; relative `@paths` failed** ("File does not exist: projects/…") because the Renode server doesn't run in the repo root → `make test` runs `renode-test` from `build/robot/p0/`, and `Boot Project` does `path add @<repo>` first ([renode.resource#L22](../../tests/common/renode.resource#L22)). *Lesson:* test a tool's output-location flags with a throwaway probe before wiring them into a Makefile.
 - **The PR first claimed Renode's timers stay at 250 MHz; my own M7 lab measured 200 MHz** (TIM2 counted 200 000 in 1 ms virtual after boot). Claude's original check had run on an empty machine (no firmware, so RCC never configured → the `.repl`'s 250 MHz start value). Re-measured all four cases: timers ARE re-timed by the RCC model (200 MHz = CubeMX, fine for P1); **DWT is not** (stays 250 MHz vs. 400 MHz CPU, so P3 cycle counts would be 1.6× off) ([script](scripts/renode_clock_check.sh), [run](results/2026-10-11_renode_clock_check/)). *Lesson:* measure an emulator in the real configuration; re-run a check before trusting it when its conditions differ from the claim.
 - **Board `Hello` period is 495.1 ms, not ~501.9 ms (HW)**: expected 501 ticks (`HAL_Delay` adds one tick) + ~0.9 ms TX. Short means the CPU runs *faster* than HAL assumes, which points at an HSE input of ≈ 8.1 MHz from the ST-LINK MCO instead of exactly 8 MHz. Reproduced with the canonical ELF (495.3 ms); Renode gives 500.999 ms with the same binary, so it follows the board's clock, not the code ([analysis](results/2026-10-10_timing_comparison/)). Cause _open_, not yet tested (MCO1 on PA8 with a scope, or an HSI A/B test). *Lesson:* the MCU can't detect its own clock error; only an external reference shows it. I first guessed "lower than 8 MHz", which has the direction backwards.
+
+- **The image says MSL 4.0.0 but loads 4.1.0** (found in the M9 lab): a no-ground error showed the path `Modelica 4.1.0+maint.om`, and `getVersion(Modelica)` returns `"4.1.0"` although `loadModel(Modelica, {"4.0.0"})` returns `true`. Cause: `installPackage(Modelica, "4.0.0")` without exact matching installed the newest compatible release, and OpenModelica treats 4.1.0 as satisfying a 4.0.0 request; `make doctor` only checks "loads". No P0 result depends on it (the RC uses basic components), but the pin isn't real. _Open: pin exactly, or document 4.1.0._ *Lesson:* a version check must compare the version, not just "it loads".
+- **OMPython session hangs in the devcontainer** (found in the M9 lab): `OMCSessionLocal()` never returned within 90 s (the older `OMCSessionZMQ` also stalled). Not needed in P0 (we drive `omc` with `.mos` scripts), but P2 plans OMPython parameter sweeps. _Open: debug before P2._
 
 ## 7. What I'd do differently
 <!-- Written by me, not generated. -->
