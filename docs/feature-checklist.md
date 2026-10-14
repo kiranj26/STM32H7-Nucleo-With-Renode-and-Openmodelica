@@ -75,7 +75,7 @@ Legend: `[ ]` planned · `[x]` demonstrated (with link)
 | Feature | Planned in | Status / evidence |
 |---|---|---|
 | CubeMX board project to CMake | P0 | [x] [p0_blinky.ioc](../fw/p0_blinky/p0_blinky.ioc), [CUBEMX.md](../fw/p0_blinky/CUBEMX.md) |
-| Timer-ISR control tick | P1 | [ ] |
+| Timer-ISR control tick | P1 | [x] TIM6 1 Hz, ISR → loop handoff ([app.c](../fw/p1_thermal/app/app.c)); period verified in Renode ([p1_thermal.robot](../projects/p1_thermal/robot/p1_thermal.robot) REQ-P1-02) |
 | UART DMA/IT ring buffer link | P1 | [ ] |
 | COBS+CRC16 link (C and Python) + host unit tests for `ctrl/` (`make unit`) | P1 | [ ] |
 | PWM generation, encoder mode, ADC | P3 | [ ] |
