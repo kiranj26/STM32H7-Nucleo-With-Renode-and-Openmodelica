@@ -1,0 +1,11 @@
+{
+  "project": "p1_thermal",
+  "level": "HW",
+  "date": "2026-10-13",
+  "bin": "build/fw/p1_thermal/p1_thermal.bin",
+  "bin_sha256": "cda8dc00d477dcd2de3dd8d04a2a1a5daf2a9bc1f360ba627337f77116dde59e",
+  "git_commit": "1b04807",
+  "port": "/dev/cu.usbmodem31403",
+  "baud": 115200,
+  "duration_s": 20
+}

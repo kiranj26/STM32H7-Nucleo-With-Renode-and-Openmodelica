@@ -1,6 +1,6 @@
 # P1: Thermal chamber with PID
 
-> Status: 🚧 in progress: firmware skeleton runs (TIM6 1 Hz tick, verified in Renode); next is milestone 1, the plant model. 0/7 milestones. · Time spent: ~__ h
+> Status: 🚧 in progress: firmware skeleton runs (TIM6 1 Hz tick, verified in Renode and on the board); next is milestone 1, the plant model. 0/7 milestones. · Time spent: ~__ h
 
 ## 1. Goal
 The first closed loop, with the simplest possible coupling. A thermal chamber (heater, thermal mass, loss to ambient, nonlinear NTC sensor) is modeled in OpenModelica from scratch and exported as a co-simulation FMU. A discrete PID in `fw/common/ctrl/` (HAL-free, unit-tested on the host) runs from a timer ISR at a fixed Ts on the STM32H743. Each Ts the firmware sends its actuation over a COBS+CRC16 link on USART2; a Python bridge steps the FMU by Ts and replies with the sensor value (firmware-driven stepping, [ADR-0005](../../docs/adr/0005-time-model.md)). The same Robot suite checks the loop in Renode and then on the real board. The analysis compares three PIDs on one plot (Modelica continuous, firmware in Renode, firmware on the board) and explains the differences: ZOH delay, Ts, and quantization.
@@ -76,8 +76,8 @@ Every number links to a dated run folder in `results/`. Levels: **HW** = the boa
 
 | Metric | Requirement | MIL | Renode | HW |
 |---|---|---|---|---|
-| Boot banner on USART3 | ≤ 1 s virtual (REQ-P1-01) | N/A | ✅ passes (2026-10-13, `build/robot/p1`, not archived yet) | not run |
-| Control tick period | 1000 ± 1 ms virtual (REQ-P1-02) | N/A | ✅ 999.9 ms (same run, not archived yet) | not run |
+| Boot banner on USART3 | ≤ 1 s virtual (REQ-P1-01) | N/A | ✅ passes (2026-10-13, `build/robot/p1`, not archived yet) | ✅ `P1 thermal boot` ([run](results/2026-10-13_hw_tick/)) |
+| Control tick period | 1000 ± 1 ms virtual (REQ-P1-02) | N/A | ✅ 999.9 ms (same run, not archived yet) | ⚠️ **985.5 ms** (−1.45 %, Hello 1..20; [run](results/2026-10-13_hw_tick/)); repeat 985.8 ms ([run](results/2026-10-13_hw_hello/)). Board clock, not firmware (§6) |
 | \|T − SP\| after 300 s | < 1 °C | | | |
 | FMU vs. `simulate()` max error | ___ | | N/A | N/A |
 
@@ -94,7 +94,7 @@ Every number links to a dated run folder in `results/`. Levels: **HW** = the boa
 - **Boot test waited for `Hello` within 1 s, but the first `Hello` now comes at Ts = 1 s**: the scaffold test predated the tick design → REQ-P1-01 waits for the boot banner instead; the tick has its own test (REQ-P1-02). *Lesson:* a boot test should check boot, not a periodic output whose timing is a separate requirement.
 - **Tooling (Claude):** `CUBEMX.md` first said SysTick's default priority is 15; it is **0** (`TICK_INT_PRIORITY 0UL`, same in P0) → corrected. A scripted edit of `main.c` also converted CubeMX's CRLF line endings and rewrote the whole file; caught in the diff and redone byte-preserving (3-line diff). *Lesson:* check the size of a diff on generated files before trusting it.
 - **Renode tick period is 999.9 ms, not 1000.0 ms** (inside the 1 ms tolerance): Hello 1 at 1000.003 ms, Hello 3 at 2999.803 ms. Hypothesis: after the first period Renode's `STM32_Timer` reloads after ARR counts instead of ARR+1 (0.1 ms = one count at 10 kHz). _Open: log Hello 2's time to confirm._
-- Carried over from P0 (open): the board clock is ~1.3 % fast ([P0 §6](../p0_blinky/README.md#6-problems-hit)); it matters for the 300 s HW run.
+- **Board tick period is 985.5 ms, not 1000 ms (HW)**: same canonical binary (`cda8dc00…`) that gives 999.9 ms in Renode. Unlike P0's `HAL_Delay` loop, the period here is pure TIM6 hardware counting (printing happens after the tick and doesn't shift it), so the ratio measures the clock directly: HSE ≈ 8 MHz × 1000/985.5 ≈ **8.12 MHz**. Confirms P0's finding (−1.31 % then, −1.45 % now: same direction, small drift) ([run](results/2026-10-13_hw_tick/), [repeat](results/2026-10-13_hw_hello/)). Cause still _open_ (ST-LINK MCO source; check MCO1 on PA8 with a scope, or an HSI A/B run). It matters for P1: a 300 s requirement on the board lasts ~296 s of real time. *Lesson:* a hardware-timed period is a better clock probe than a software delay loop.
 
 ## 7. What I'd do differently
 <!-- Written by me, not generated. -->
@@ -104,7 +104,7 @@ Milestones from the roadmap, in order. 🎓 = mine to do; Claude explains and re
 - [x] CubeMX: create `p1_thermal.ioc` and generate CMake (four generation passes, reviewed with `/cubemx-regen` each time; [CUBEMX.md](../../fw/p1_thermal/CUBEMX.md)), 2026-10-13
 - [x] 🎓 Choose Ts = 1 s from τ ≈ 200 s and derive ARR = 9999 (§2), 2026-10-13
 - [x] Firmware skeleton: tick ISR + handoff + Renode tests. **Written by Claude at my request** ([app.c](../../fw/p1_thermal/app/app.c), [p1_thermal.robot](robot/p1_thermal.robot)); the ISR design reasoning (no blocking I/O at priority 2) is mine.
-- [ ] First flash on the board (`make hw P=p1`)
+- [x] First flash on the board: `make hw P=p1` twice, 20 s each, by me (2026-10-13)
 - [ ] 1. 🎓 `Lab.Thermal.Chamber` model and its bench (energy balance + NTC β model; τ = C/G, ΔT_ss = P/G)
 - [ ] 2. 🎓 FMU export and validation (`fmu-export-validate` skill)
 - [ ] 3. Reference closed loop with Modelica `LimPID`
