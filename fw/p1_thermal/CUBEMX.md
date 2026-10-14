@@ -64,7 +64,7 @@ Keep the default priority group (4 bits pre-emption). Lower number = higher prio
 |---|---|---|
 | TIM6 global (`TIM6_DAC_IRQn`) | **2** | The control tick wins over comms: a late byte must never delay the PID. |
 | USART2 global | **3** | It fills the RX ring buffer; the tick ISR reads the latest complete frame. |
-| System tick timer | default (15) | Only `HAL_GetTick`/`HAL_Delay` in the background loop. |
+| System tick timer | default (**0**, `TICK_INT_PRIORITY`; same as P0) | Leave it: the SysTick ISR only increments a counter (well under 1 µs), so it can't noticeably delay the tick. `HAL_GetTick`/`HAL_Delay` are used only in the background loop. |
 
 ## 4. Project Manager
 - Project Name: `p1_thermal`, Project Location: `<repo>/fw/` → `fw/p1_thermal/p1_thermal.ioc` (`fw/p1_thermal/app/` already exists and won't be touched)
