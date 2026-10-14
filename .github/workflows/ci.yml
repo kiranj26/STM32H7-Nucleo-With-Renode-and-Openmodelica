@@ -50,6 +50,9 @@ jobs:
       - name: make fw P=p0
         run: $RUN make fw P=p0
 
+      - name: make fw P=p1
+        run: $RUN make fw P=p1
+
       # Stage 3: models (`make fmu` joins in P1, the first plant FMU)
       - name: make sim P=p0
         run: $RUN make sim P=p0
@@ -58,16 +61,23 @@ jobs:
       - name: make test P=p0 TAGS=smoke
         run: $RUN make test P=p0 TAGS=smoke
 
+      # `make sim P=p1` / `make fmu P=p1` join with milestones 1-2 (the thermal plant model)
+      - name: make test P=p1 TAGS=smoke
+        run: $RUN make test P=p1 TAGS=smoke
+
       # Stage 5: evidence
       - name: Upload reports and plots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: p0-evidence
+          name: evidence
           path: |
             build/robot/p0/*.html
             build/robot/p0/robot_output.xml
             build/sim/p0/rc_compare.png
             build/sim/p0/metrics.json
             build/fw/p0_blinky/p0_blinky.elf
+            build/robot/p1/*.html
+            build/robot/p1/robot_output.xml
+            build/fw/p1_thermal/p1_thermal.elf
           if-no-files-found: warn
