@@ -87,5 +87,5 @@ Note: the Makefile, devcontainer and `tests/common` exist since P0 (`make doctor
 
 ## Current status
 <!-- Updated by the close-project skill. -->
-- Active project: **P1: Thermal chamber** (not started; start with `/start-project 1 thermal`)
+- Active project: **P1: Thermal chamber** (branch `p1/scaffold`, draft PR). Done 2026-10-13: CubeMX project, TIM6 1 Hz tick with ISR→loop handoff, Renode tests REQ-P1-01/02, first HW runs (tick 985.5 ms = board HSE ~8.12 MHz). Next: milestone 1 `Lab.Thermal.Chamber` (owner's 🎓, use `/modelica-model`). Open: DBGMCU overlay not yet in `p1.resc`; Renode tick 999.9 ms hypothesis (ARR vs ARR+1) unconfirmed.
 - Completed: **P0: Toolchain warm-up** (2026-10-11, PRs #3 + #4, tag `p0-done`). Open follow-ups recorded in `projects/p0_blinky/README.md` §6: board HSE ~1.3 % fast, OMPython session hang (fix before P2), DWT clock in Renode (fix before P3).

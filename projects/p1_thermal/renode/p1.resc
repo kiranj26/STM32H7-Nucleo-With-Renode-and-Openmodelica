@@ -1,0 +1,28 @@
+:name: P1 Thermal chamber
+:description: Boots the P1 firmware on the STM32H743 platform (plus the project overlay).
+
+# Overridable from Robot / CLI:  renode -e '$bin=@...' pN.resc
+$name?="p1_thermal"
+$bin?=@build/fw/p1_thermal/p1_thermal.elf
+$plant_port?=4321
+
+using sysbus
+mach create $name
+
+machine LoadPlatformDescription @platforms/cpus/stm32h743.repl
+# Project overlay: fixes and additions on top of the upstream platform (create when needed)
+# machine LoadPlatformDescription @projects/p1_thermal/renode/p1_overlay.repl
+
+# Logs/console: ST-LINK VCP = USART3
+# Plant link (P1+): socket terminal bridged to the Python co-sim bridge
+# emulation CreateServerSocketTerminal $plant_port "plant" false
+# connector Connect sysbus.usart2 plant
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+runMacro $reset
+
+# GUI conveniences live in p1_gui.resc (which does `include @.../p1.resc` then
+# `showAnalyzer sysbus.usart3`), because .resc has no conditionals and this file must stay headless.
