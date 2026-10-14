@@ -1,0 +1,17 @@
+#include "app.h"
+
+#include "main.h" /* CubeMX handles (huart3, htimX) and pin names */
+
+/* P1 Thermal chamber.
+ * Control path rule: no HAL_Delay / printf / blocking I/O in the tick ISR.
+ */
+
+void app_init(void)
+{
+    /* Start peripherals, print banner on USART3. */
+}
+
+void app_loop(void)
+{
+    /* Background work: logging, link handling. Control runs from the timer ISR. */
+}

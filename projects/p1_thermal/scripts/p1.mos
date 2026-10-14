@@ -1,0 +1,17 @@
+// P1 Thermal chamber: simulate the test bench and export the plant FMU.
+// Run from repo root:  omc projects/p1_thermal/scripts/p1.mos
+// Every call is followed by getErrorString() so failures are visible in the log.
+
+loadModel(Modelica, {"4.0.0"}); getErrorString();
+// models/Lab/ does not exist yet: creating Lab.Thermal.Chamber is milestone 1 (a 🎓 step)
+// loadFile("models/Lab/package.mo"); getErrorString();
+// loadFile("projects/p1_thermal/model/P1Bench.mo"); getErrorString();
+
+// --- Simulation (state solver + tolerance explicitly) ---
+// simulate(P1Bench, stopTime=600, tolerance=1e-6, method="dassl",
+//          outputFormat="csv", fileNamePrefix="p1_bench"); getErrorString();
+
+// --- FMU export (co-simulation, CVODE inside the FMU, not the default Euler) ---
+// setCommandLineOptions("--fmiFlags=s:cvode"); getErrorString();
+// buildModelFMU(Lab.Thermal.Chamber, version="2.0", fmuType="cs",
+//               fileNamePrefix="p1_plant", platforms={"static"}); getErrorString();

@@ -32,6 +32,8 @@ Legend: `[ ]` planned · `[x]` demonstrated (with link)
 | `.mos` scripting (`loadModel`, `simulate`, `getErrorString`) | P0–P1 | [x] [p0.mos](../projects/p0_blinky/scripts/p0.mos) |
 | Solver and tolerance study | P1 | [ ] |
 | FMU export (CS, CVODE) and validation | P1 | [ ] |
+| Plant written from scratch with a nonlinear sensor (NTC β model) | P1 | [ ] |
+| Reference closed loop with MSL `LimPID` | P1 | [ ] |
 | `linearize()` | P2 | [ ] |
 | Parameter sweeps with OMPython | P2 | [ ] |
 | Multi-domain (Electrical + Rotational) | P3 | [ ] |
@@ -75,6 +77,7 @@ Legend: `[ ]` planned · `[x]` demonstrated (with link)
 | CubeMX board project to CMake | P0 | [x] [p0_blinky.ioc](../fw/p0_blinky/p0_blinky.ioc), [CUBEMX.md](../fw/p0_blinky/CUBEMX.md) |
 | Timer-ISR control tick | P1 | [ ] |
 | UART DMA/IT ring buffer link | P1 | [ ] |
+| COBS+CRC16 link (C and Python) + host unit tests for `ctrl/` (`make unit`) | P1 | [ ] |
 | PWM generation, encoder mode, ADC | P3 | [ ] |
 | D-cache / MPU handling for DMA | P3 | [ ] |
 | DWT cycle counting | P3 | [ ] |
